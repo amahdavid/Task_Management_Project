@@ -1,7 +1,7 @@
 import React from "react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import "./signupform.css";
+import "./forms.css";
 import 'bootstrap-icons/font/bootstrap-icons.css'; // Import Bootstrap icons CSS
 
 const SignupForm = () => {

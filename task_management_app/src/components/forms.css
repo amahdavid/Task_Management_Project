@@ -6,6 +6,17 @@
     min-height: 100vh;
 }
 
+.login-form {
+    position: relative;
+    max-width: 430px;
+    width: 100%;
+    padding: 34px;
+    border-radius: 6px;
+    background-color: whitesmoke;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, alph0a);
+    font-family: 'CustomFont';
+}
+
 .signup-form {
     position: relative;
     max-width: 430px;
@@ -16,6 +27,7 @@
     box-shadow: 0 5px 10px rgba(0, 0, 0, alph0a);
     font-family: 'CustomFont';
 }
+
 
 @font-face {
     font-family: 'CustomFont';
