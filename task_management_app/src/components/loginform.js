@@ -1,27 +1,47 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./forms.css";
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
-    username: "",
+    email: "",
     password: "",
   });
 
-  const handleSubmit = (event) => {
-    event.preventDefault(); // Prevent the default form submission behavior
-    // Perform login validation and submit data to the server here
+  const navigate = useNavigate();
 
-    // Once validation passes, you can send this data to your server
-    console.log("Login data:", formData);
+  const handleSubmit = async (event) => {
+    event.preventDefault(); // Prevent the default form submission behavior
+
+    try {
+      const response = await fetch("http://localhost:5000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.status === 200) {
+        console.log("Login successful!");
+        navigate("/homepage");
+      } else {
+        console.log("Login failed.");
+        alert("Inavlid email or password. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
+  // Once validation passes, you can send this data to your server
+  console.log("Login data:", formData);
 
   const handleChange = (event) => {
-    const { name, value } = event.target;
+    const { name: email, value } = event.target;
     setFormData((prevFormData) => {
       return {
         ...prevFormData,
-        [name]: value,
+        [email]: value,
       };
     });
   };
@@ -33,9 +53,9 @@ const LoginForm = () => {
         <form onSubmit={handleSubmit}>
           <input
             type="text"
-            placeholder="Username"
-            name="username"
-            value={formData.username}
+            placeholder="Email"
+            name="email"
+            value={formData.email}
             onChange={handleChange}
           />
           <input
