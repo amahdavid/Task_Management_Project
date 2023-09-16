@@ -6,8 +6,6 @@ import 'bootstrap-icons/font/bootstrap-icons.css'; // Import Bootstrap icons CSS
 
 const SignupForm = () => {
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -15,9 +13,46 @@ const SignupForm = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault(); // Prevent the default form submission behavior
-    // Perform validation and submit data to the server here
 
-    // Once validation passes, you can send this data to your server
+    // client-side validation
+    const isValidEmail = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(formData.email);
+    const isStrongPassword = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/i.test(formData.password);
+
+    if (!isValidEmail) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+
+    if (!isStrongPassword) {
+      alert("Password must be at least 8 characters long and include both letters and numbers.");
+      return;
+    }
+    
+    const userData = {
+      email: formData.email,
+      password: formData.password,
+    };
+
+    // Send the form data to the server
+    fetch("http://localhost:5000/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userData),
+    })
+
+    // If the response is successful, redirect to the home page
+    .then((response) => {
+      if (response.status === 200) {
+        window.location.href = "/homepage";
+      }
+    })
+
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+
     console.log("Form data:", formData);
   };
 
@@ -36,13 +71,6 @@ const SignupForm = () => {
       <div className="signup-form">
         <h1>Sign Up</h1>
         <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder="Username"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-          />
           <input
             type="text"
             placeholder="Email"
@@ -67,7 +95,7 @@ const SignupForm = () => {
           <button type="submit">Sign Up</button>
         </form>
 
-        <p>Already have an account?<Link to="/">Login</Link></p>
+        <p>Already have an account?<Link to="/login">Login</Link></p>
         <p>Or sign up with:</p>
 
         <div className="socialMedia"> 
