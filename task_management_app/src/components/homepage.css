@@ -4,7 +4,7 @@
   }
   
   .navbar {
-    background-color: #333;
+    background-color: #30506F;
     color: white;
     padding: 1rem;
   }
@@ -23,7 +23,7 @@
   }
   
   .sidebar {
-    background-color: #f0f0f0;
+    background-color: #C1EEFF;
     width: 200px;
     padding: 1rem;
     height: 100vh; /* Make sidebar full height */
@@ -36,6 +36,11 @@
   
   li {
     margin-bottom: 1rem;
+    font-family: CustomFont;
+    text-align: left;
+    font-size: 20px;
+    color: #000;
+    margin-bottom: 40px;
   }
   
   .main-content {
