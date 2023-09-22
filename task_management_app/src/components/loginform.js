@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./forms.css";
 
-const LoginForm = () => {
+const LoginForm = ({ updateUserEmail }) => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+
 
   const navigate = useNavigate();
 
@@ -23,6 +24,7 @@ const LoginForm = () => {
       });
 
       if (response.status === 200) {
+        updateUserEmail(formData.email);
         console.log("Login successful!");
         navigate("/homepage");
       } else {

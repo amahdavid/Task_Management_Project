@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import "./forms.css";
 import "bootstrap-icons/font/bootstrap-icons.css"; // Import Bootstrap icons CSS
 
-const SignupForm = () => {
+const SignupForm = ({ updateUserEmail }) => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -53,6 +53,7 @@ const SignupForm = () => {
       .then((response) => {
         console.log("before if");
         if (response.status === 201) {
+          updateUserEmail(formData.email);
           console.log("Sign up successful!");
           navigate("/homepage");
         }

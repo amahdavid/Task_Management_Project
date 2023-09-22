@@ -1,5 +1,5 @@
+import React, { useState } from "react";
 import LoginForm from "./components/loginform";
-import React from "react";
 import SignupForm from "./components/signup";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LandingPage from "./components/landingpage";
@@ -10,13 +10,32 @@ import Calendar from "./components/calendar";
 import Settings from "./components/settings";
 
 function App() {
+  const [userEmail, setUserEmail] = useState(""); // Initialize userEmail state
+
+  // Function to set userEmail when a user logs in or signs up
+  const updateUserEmail = (email) => {
+    setUserEmail(email);
+  };
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginForm />} />
-        <Route path="/signup" element={<SignupForm />} />
-        <Route path="/homepage" element={<Homepage />} />
+        <Route
+          path="/"
+          element={<LandingPage userEmail={userEmail} />} // Pass userEmail as a prop
+        />
+        <Route
+          path="/login"
+          element={<LoginForm updateUserEmail={updateUserEmail} />} // Pass updateUserEmail as a prop
+        />
+        <Route
+          path="/signup"
+          element={<SignupForm updateUserEmail={updateUserEmail} />} // Pass updateUserEmail as a prop
+        />
+        <Route
+          path="/homepage"
+          element={<Homepage userEmail={userEmail} />} // Pass userEmail as a prop
+        />
         <Route path="/boards" element={<Boards />} />
         <Route path="/members" element={<Members />} />
         <Route path="/calendar" element={<Calendar />} />
