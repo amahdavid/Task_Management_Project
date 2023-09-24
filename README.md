@@ -1,5 +1,3 @@
-Certainly, you can add the key features and tech stack for your ongoing project to your resume as bullet points. Here's how you can structure it:
-
 **Project: Task and Project Management System**
 *Key Features:*
 - User Registration and Authentication: Users can create accounts and log in securely.
