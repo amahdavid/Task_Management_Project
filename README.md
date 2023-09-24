@@ -26,7 +26,7 @@ Data Export: Allow users to export task and project data for reporting or backup
 Tech Stack:
 Frontend: React.js for the user interface.
 Backend: Python with a web framework like Django or Flask for building the server and API endpoints.
-Database: Use a relational database (e.g., PostgreSQL) to store user data, tasks, and project information.
+Database: Use a relational database (e.g., MongoDB) to store user data, tasks, and project information.
 Authentication: Implement user authentication using JWT or OAuth.
 Real-time Communication: Use web sockets (e.g., with Django Channels) for real-time updates and notifications.
 UI Framework: Consider using UI frameworks like Material-UI or Ant Design for styling.
