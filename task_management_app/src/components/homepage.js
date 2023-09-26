@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './homepage.css'; // Import your CSS file for styling
 
 const HomePage = ({ userEmail }) => {
@@ -12,6 +12,12 @@ const HomePage = ({ userEmail }) => {
     setIsCreatingBoard(true);
   };
 
+  const navigate = useNavigate();
+
+  const handleBoardClick = (boardId) => {
+    navigate('/kanbanboard/${boardId}')
+  }
+  
   const handleSubmitNewBoard = () => {
     // Send a request to create a new board with the provided board name and user email
     fetch('http://localhost:5000/create_board', {
@@ -27,7 +33,8 @@ const HomePage = ({ userEmail }) => {
           setIsCreatingBoard(false);
           setNewBoardName('');
           // After creating a board, you can fetch the updated list of boards
-          fetchBoards();
+          navigate("/boards");
+          //fetchBoards();
         } else {
           // Handle errors, e.g., display an error message to the user
           console.error('Error creating board:', response.statusText);
@@ -70,7 +77,7 @@ const HomePage = ({ userEmail }) => {
   return (
     <div className="homepage">
       <nav className="navbar">
-        <button className="create-button" onClick={handleCreateBoard}>
+        <button className="create-button" onClick={handleBoardClick}>
           Create +
         </button>
       </nav>

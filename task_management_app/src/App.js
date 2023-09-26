@@ -8,6 +8,7 @@ import Boards from "./components/boards";
 import Members from "./components/members";
 import Calendar from "./components/calendar";
 import Settings from "./components/settings";
+import KanbanBoard from "./components/kanbanboard";
 
 function App() {
   const [userEmail, setUserEmail] = useState(""); // Initialize userEmail state
@@ -36,7 +37,10 @@ function App() {
           path="/homepage"
           element={<Homepage userEmail={userEmail} />} // Pass userEmail as a prop
         />
-        <Route path="/boards" element={<Boards />} />
+        <Route 
+          path="/boards" 
+          element={<Boards userEmail={userEmail} />} />
+        <Route path="/kanbanboard/:boardId" element={<KanbanBoard />} />
         <Route path="/members" element={<Members />} />
         <Route path="/calendar" element={<Calendar />} />
         <Route path="/settings" element={<Settings />} />

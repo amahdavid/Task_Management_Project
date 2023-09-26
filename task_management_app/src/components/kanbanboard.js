@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useParams } from "react-router-dom";
 import "./kanbanboard.css";
 
 const initialBoard = {
@@ -8,6 +9,7 @@ const initialBoard = {
 };
 
 const KanbanBoard = () => {
+  const{boardId} = useParams();
   const [board, setBoard] = useState(initialBoard);
   const [newTaskText, setNewTaskText] = useState("");
 

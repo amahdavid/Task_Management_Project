@@ -147,6 +147,28 @@ def get_boards(userEmail):
     return jsonify({"boards": boards_data}), 200
 
 
+@app.route('/get_board/<userEmail>/<boardId>', methods=['GET'])
+def get_board(userEmail, boardId):
+    # Log the request to get a specific board
+    logging.info(f"Received request to get board with ID {boardId} for user with email: {userEmail}")
+
+    # Fetch the specific board associated with the user and the given board_id
+    board = boards.find_one({"user_id": userEmail, "_id": ObjectId(boardId)})
+
+    if board is None:
+        # Handle the case where the board doesn't exist or isn't associated with the user
+        return jsonify({"message": "Board not found"}), 404
+
+    # Extract relevant information from the board document
+    board_data = {
+        "board_id": str(board["_id"]),
+        "board_name": board["board_name"],
+        # Add other board properties as needed
+    }
+
+    return jsonify({"board": board_data}), 200
+
+
 # Route for updating a board
 @app.route('/update_board/<board_id>', methods=['PUT'])
 def update_board(board_id):
