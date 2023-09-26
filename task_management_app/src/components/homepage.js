@@ -7,12 +7,12 @@ const HomePage = ({ userEmail }) => {
   const [newBoardName, setNewBoardName] = useState('');
   const [boards, setBoards] = useState([]); // State variable to store boards
 
+  const navigate = useNavigate();
+
   const handleCreateBoard = () => {
     // Open the dialog for creating a new board
     setIsCreatingBoard(true);
   };
-
-  const navigate = useNavigate();
 
   const handleBoardClick = (boardId) => {
     navigate('/kanbanboard/${boardId}')
@@ -29,12 +29,15 @@ const HomePage = ({ userEmail }) => {
     })
       .then((response) => {
         if (response.status === 201) {
-          // Board created successfully, you can close the dialog and update the UI as needed
+          // board created successfully, extract the board ID from the server response
+          response.json().then((data) => {
+            const newBoardId = data.boardId;
+            // Add the new board to the list of boards
+            navigate(`/kanbanboard/${newBoardId}`);
+          });
+          // close the dialog and update created board's URL
           setIsCreatingBoard(false);
           setNewBoardName('');
-          // After creating a board, you can fetch the updated list of boards
-          navigate("/boards");
-          //fetchBoards();
         } else {
           // Handle errors, e.g., display an error message to the user
           console.error('Error creating board:', response.statusText);
@@ -77,7 +80,7 @@ const HomePage = ({ userEmail }) => {
   return (
     <div className="homepage">
       <nav className="navbar">
-        <button className="create-button" onClick={handleBoardClick}>
+        <button className="create-button" onClick={handleCreateBoard}>
           Create +
         </button>
       </nav>
@@ -116,6 +119,7 @@ const HomePage = ({ userEmail }) => {
       {isCreatingBoard && (
         <div className="create-board-dialog">
           <h2>Create a New Board</h2>
+          <form onSubmit={handleSubmitNewBoard}>
           <input
             type="text"
             placeholder="Board Name"
@@ -124,6 +128,7 @@ const HomePage = ({ userEmail }) => {
           />
           <button onClick={handleSubmitNewBoard}>Create</button>
           <button onClick={() => setIsCreatingBoard(false)}>Cancel</button>
+          </form>
         </div>
       )}
     </div>
