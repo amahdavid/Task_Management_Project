@@ -14,6 +14,7 @@ const HomePage = ({ userEmail }) => {
     setIsCreatingBoard(true);
   };
 
+  // why is boardID not defined?
   const handleBoardClick = (boardId) => {
     navigate('/kanbanboard/${boardId}')
   }
