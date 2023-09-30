@@ -12,6 +12,9 @@ export default function KanbanBoard() {
 
   const handleAddColumn = () => {
     // create a new column with the title newColumnTitle
+    if (newColumnTitle.trim() === "") {
+      return;
+    }
     const newCol = {
       title: newColumnTitle,
       tasks: [],
@@ -36,6 +39,35 @@ export default function KanbanBoard() {
     }
   };
 
+  // Function to add a task to a specific column
+  const addTaskToColumn = (columnId, task) => {
+    const updatedColumns = columns.map((column) => {
+      if (column.id === columnId) {
+        const newTask = {
+          id: column.tasks.length + 1,
+          title: task,
+        };
+        column.tasks.push(newTask);
+      }
+      return column;
+    });
+    setColumns(updatedColumns);
+  };
+
+  // Function to update tastk title
+  const updateTaskTitle = (taskId, newTitle) => {
+    const updatedColumns = columns.map((column) => {
+      column.tasks = column.tasks.map((task) => {
+        if (task.id === taskId) {
+          return {...task, title: newTitle};
+        }
+        return task;
+      });
+      return column;
+    });
+    setColumns(updatedColumns);
+  };
+
   return (
     <DragDropContext>
       <h2 style={{ textAlign: "center" }}>PROGRESS BOARD</h2>
@@ -44,13 +76,15 @@ export default function KanbanBoard() {
         style={{
           display: "flex",
           flexDirection: "column",
-          height: "100vh", // Set a fixed height for the container
+          height: "auto", // Set a fixed height for the container
         }}
       >
         <div
           style={{
             display: "flex",
-            overflowX: "auto", // Add horizontal scrollbar when columns overflow
+            overflowX: "auto",
+            overflowY: "auto", // Add vertical scrollbar when columns overflow
+            // Add horizontal scrollbar when columns overflow
           }}
           ref={boardRef}
         >
@@ -75,6 +109,8 @@ export default function KanbanBoard() {
                   title={column.title}
                   tasks={column.tasks}
                   id={column.id}
+                  addTaskToColumn={addTaskToColumn}
+                  updateTaskTitle={updateTaskTitle}
                 />
               </div>
             ))}
@@ -83,9 +119,17 @@ export default function KanbanBoard() {
         <div style={{ textAlign: "center", marginTop: "8px" }}>
           {/* Button to show/hide the column addition prompt */}
           {!isAddingColumn ? (
-            <button onClick={() => setIsAddingColumn(true)}>+ Add Column</button>
+            <button onClick={() => setIsAddingColumn(true)}>
+              + Add Column
+            </button>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
               <input
                 type="text"
                 placeholder="Enter column title"
@@ -93,7 +137,9 @@ export default function KanbanBoard() {
                 onChange={(e) => setNewColumnTitle(e.target.value)}
                 style={{ marginBottom: "4px", width: "100%" }}
               />
-              <button onClick={handleAddColumn} style={{ width: "100px" }}>Add Column</button>
+              <button onClick={handleAddColumn} style={{ width: "100px" }}>
+                Add Column
+              </button>
             </div>
           )}
         </div>

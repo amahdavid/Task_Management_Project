@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Droppable } from "react-beautiful-dnd";
 import styled from "styled-components";
 import "./scroll.css"
@@ -13,6 +13,7 @@ const Container = styled.div`
   -ms-overflow-style: none;
   scrollbar-width: none;
   border: 1px solid grey;
+  scrollbar-color: #ccc #f4f5f7;
 `;
 
 const Title = styled.h3`
@@ -29,7 +30,15 @@ const TaskList = styled.div`
   min-height: 100px;
 `;
 
-export default function column({ title, tasks, id }) {
+export default function Column({ title, tasks, id, addTask, updateTaskTitle, addTaskToColumn  }) {
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+
+  const handleAddTask = () => {
+    if(newTaskTitle.trim() !== "") {
+      addTaskToColumn (id, newTaskTitle);
+      setNewTaskTitle("");
+    }
+  }
   
   return (
     <Container className="column">
@@ -37,6 +46,7 @@ export default function column({ title, tasks, id }) {
         style={{
           backgroundColor: "lightblue",
           position: "stick",
+          top: "0",
         }}
       >
         {title}
@@ -49,14 +59,33 @@ export default function column({ title, tasks, id }) {
             {...provided.droppableProps}
             isDraggingOver={snapshot.isDraggingOver}
           >
-            <Task
-              task={{id: 1, title: "Finish project", description: "This is task 1"}}
-              index={0}
-            ></Task>
+            {tasks.map((task, index) => (
+              <Task
+                key={task.id}
+                task={task}
+                index={index}
+                updateTask={updateTaskTitle}
+              />
+            ))}
             {provided.placeholder}
           </TaskList>
         )}
       </Droppable>
+
+      <div>
+        <input
+          type="text"
+          placeholder="Enter task title"
+          value={newTaskTitle}
+          onChange={(e) => setNewTaskTitle(e.target.value)}
+          onKeyDown={(e) => {
+            if(e.key === "Enter") {
+              handleAddTask();
+            }
+          }}
+          />
+          <button onClick={handleAddTask} style={{ width: "100px" }}>Add task</button>
+      </div>
     </Container>
   );
 }

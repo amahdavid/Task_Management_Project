@@ -1,5 +1,5 @@
-import React from "react";
-import { Draggable, Droppable } from "react-beautiful-dnd";
+import React, { useState } from "react";
+import { Draggable } from "react-beautiful-dnd";
 import styled from "styled-components";
 import Icon from "./Icon.js";
 import Avatar from "./Avatar.js";
@@ -39,7 +39,15 @@ function bgcolorchange(props) {
     : "lightgreen";
 }
 
-export default function task({ task, index }) {
+export default function Task({ task, index, updateTask }) {
+
+  const [taskTitle, setTaskTitle] = useState(task.title);
+
+  const handleTaskTitleChange = (e) => {
+    setTaskTitle(e.target.value);
+  };
+
+
   return (
     <Draggable
       draggableId={`${task.id}`} key={task.id} index={index}>
@@ -57,15 +65,17 @@ export default function task({ task, index }) {
                     <span>
                         <small>
                             #{task.id}
-                            {" "}
                         </small>
                     </span>
                 </div>
 
                 <div style={{display: "flex", justifyContent: "center", padding: 2}}>
-
-                    <TextContent>{ task.title }</TextContent>
-
+                  <input
+                    type="text"
+                    value={taskTitle}
+                    onChange={handleTaskTitleChange}
+                    onBlur={() => updateTask(task.id, taskTitle)}
+                  />
                 </div>  
                 <Icon>
                     <div>
