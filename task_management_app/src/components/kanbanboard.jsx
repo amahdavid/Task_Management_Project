@@ -40,6 +40,12 @@ export default function KanbanBoard() {
     }
   };
 
+  const handleInputKeyDown = (e) => {
+    if(e.key === "Enter") {
+      handleAddColumn();
+    }
+  }
+
   // Function to add a task to a specific column
   const addTaskToColumn = (columnId, task) => {
     const updatedColumns = columns.map((column) => {
@@ -174,6 +180,7 @@ export default function KanbanBoard() {
                 placeholder="Enter column title"
                 value={newColumnTitle}
                 onChange={(e) => setNewColumnTitle(e.target.value)}
+                onKeyDown={handleInputKeyDown}
                 style={{ marginBottom: "4px", width: "100%" }}
               />
               <button onClick={handleAddColumn} style={{ width: "100px" }}>

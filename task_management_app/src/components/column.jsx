@@ -39,6 +39,12 @@ export default function Column({ title, tasks, id, addTask, updateTaskTitle, add
       setNewTaskTitle("");
     }
   }
+
+  const handleInputKeyDown = (e) => {
+    if(e.key === "Enter") {
+      handleAddTask();
+    }
+  }
   
   return (
     <Container className="column">
@@ -52,7 +58,7 @@ export default function Column({ title, tasks, id, addTask, updateTaskTitle, add
         {title}
       </Title>
 
-      <Droppable droppableId={`column-${id}`}>
+      <Droppable droppableId={`column-${id}`} key={id}>
         {(provided, snapshot) => (
           <TaskList
             ref={provided.innerRef}
@@ -78,11 +84,7 @@ export default function Column({ title, tasks, id, addTask, updateTaskTitle, add
           placeholder="Enter task title"
           value={newTaskTitle}
           onChange={(e) => setNewTaskTitle(e.target.value)}
-          onKeyDown={(e) => {
-            if(e.key === "Enter") {
-              handleAddTask();
-            }
-          }}
+          onKeyDown={(e) => {handleInputKeyDown(e)}}
           />
           <button onClick={handleAddTask} style={{ width: "100px" }}>Add task</button>
       </div>
