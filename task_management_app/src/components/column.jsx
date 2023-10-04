@@ -52,7 +52,7 @@ export default function Column({ title, tasks, id, addTask, updateTaskTitle, add
         {title}
       </Title>
 
-      <Droppable droppableId={id}>
+      <Droppable droppableId={`column-${id}`}>
         {(provided, snapshot) => (
           <TaskList
             ref={provided.innerRef}

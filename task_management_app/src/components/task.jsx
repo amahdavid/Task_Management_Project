@@ -19,13 +19,6 @@ const Container = styled.div`
   flex-direction: column;
 `;
 
-const TextContent = styled.div``;
-
-const icons = styled.div`
-  display: flex;
-  justify-content: end;
-  padding: 2px;
-`;
 
 function bgcolorchange(props) {
   return props.isDragging
@@ -50,7 +43,7 @@ export default function Task({ task, index, updateTask }) {
 
   return (
     <Draggable
-      draggableId={`${task.id}`} key={task.id} index={index}>
+      draggableId={`task-${task.id}`} key={task.id} index={index}>
 
         {(provided, snapshot) => (
             <Container

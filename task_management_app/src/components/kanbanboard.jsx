@@ -6,6 +6,7 @@ export default function KanbanBoard() {
   const [columns, setColumns] = useState([]);
   const [newColumnTitle, setNewColumnTitle] = useState("");
   const [isAddingColumn, setIsAddingColumn] = useState(false);
+  const [taskCounter, setTaskCounter] = useState(1);
 
   // Use a ref to scroll to the right when a new column is added
   const boardRef = useRef(null);
@@ -44,13 +45,14 @@ export default function KanbanBoard() {
     const updatedColumns = columns.map((column) => {
       if (column.id === columnId) {
         const newTask = {
-          id: column.tasks.length + 1,
+          id: `task-${taskCounter}`,
           title: task,
         };
         column.tasks.push(newTask);
       }
       return column;
     });
+    setTaskCounter(taskCounter + 1);
     setColumns(updatedColumns);
   };
 
@@ -68,8 +70,45 @@ export default function KanbanBoard() {
     setColumns(updatedColumns);
   };
 
+  const handleTaskDragEnd = (result) => {
+    if (!result.destination) {
+      return; // No destination, nothing to do
+    }
+  
+    // Get the source and destination column IDs
+    const sourceColumnId = parseInt(result.source.droppableId);
+    const destColumnId = parseInt(result.destination.droppableId);
+  
+    // Find the source and destination columns
+    const sourceColumn = columns.find((column) => column.id === sourceColumnId);
+    const destColumn = columns.find((column) => column.id === destColumnId);
+  
+    // Make sure both columns exist
+    if (!sourceColumn || !destColumn) {
+      return; // Handle the case where the columns don't exist
+    }
+  
+    // Get the source and destination task indices
+    const sourceTaskIndex = parseInt(result.source.index);
+    const destTaskIndex = parseInt(result.destination.index);
+  
+    // Get the task to move
+    const taskToMove = sourceColumn.tasks[sourceTaskIndex];
+  
+    // Remove the task from the source column
+    sourceColumn.tasks.splice(sourceTaskIndex, 1);
+  
+    // Add the task to the destination column
+    destColumn.tasks.splice(destTaskIndex, 0, taskToMove);
+  
+    // Create a copy of the columns array with the updates
+    const updatedColumns = [...columns];
+  
+    // Update the state with the new columns array
+    setColumns(updatedColumns);
+  };
   return (
-    <DragDropContext>
+    <DragDropContext onDragEnd={handleTaskDragEnd}>
       <h2 style={{ textAlign: "center" }}>PROGRESS BOARD</h2>
 
       <div
