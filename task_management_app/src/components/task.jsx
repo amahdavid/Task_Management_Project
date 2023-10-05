@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Draggable } from "react-beautiful-dnd";
 import styled from "styled-components";
 import Icon from "./Icon.js";
@@ -39,6 +39,10 @@ export default function Task({ task, index, updateTask }) {
   const handleTaskTitleChange = (e) => {
     setTaskTitle(e.target.value);
   };
+
+  useEffect(() => {
+    console.log("Task state has been updated:", taskTitle);
+  }, [taskTitle]);
 
 
   return (

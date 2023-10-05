@@ -7,6 +7,7 @@ export default function KanbanBoard() {
   const [newColumnTitle, setNewColumnTitle] = useState("");
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [taskCounter, setTaskCounter] = useState(1);
+  const [columnCounter, setColumnCounter] = useState(1);
 
   // Use a ref to scroll to the right when a new column is added
   const boardRef = useRef(null);
@@ -16,30 +17,47 @@ export default function KanbanBoard() {
     if (newColumnTitle.trim() === "") {
       return;
     }
+  
+    // Check if a column with the same title already exists
+    const columnExists = columns.some((column) => column.title === newColumnTitle);
+  
+    // Create a unique column title
+    let uniqueColumnTitle = newColumnTitle;
+    let counter = 2;
+    while (columnExists) {
+      uniqueColumnTitle = `${newColumnTitle} (${counter})`;
+      columnExists = columns.some((column) => column.title === uniqueColumnTitle);
+      counter++;
+    }
+  
+    // Create a new column with the unique title
     const newCol = {
-      title: newColumnTitle,
+      title: uniqueColumnTitle,
       tasks: [],
-      id: columns.length + 1,
+      id: `column-${columnCounter}`,
     };
-
+  
+    // Increment the column counter
+    setColumnCounter(columnCounter + 1);
+  
     // add the new column to the columns array
     const updatedColumns = [...columns, newCol];
-
+  
     // update the state
     setColumns(updatedColumns);
-
+  
     // reset the newColumnTitle
     setNewColumnTitle("");
-
+  
     // Close the column addition prompt
     setIsAddingColumn(false);
-
+  
     // Scroll to the right when a new column is added
     if (boardRef.current) {
       boardRef.current.scrollLeft = boardRef.current.scrollWidth;
     }
   };
-
+  
   const handleInputKeyDown = (e) => {
     if(e.key === "Enter") {
       handleAddColumn();
@@ -78,25 +96,31 @@ export default function KanbanBoard() {
 
   const handleTaskDragEnd = (result) => {
     if (!result.destination) {
+      console.log("No destination, nothing to do");
       return; // No destination, nothing to do
     }
   
     // Get the source and destination column IDs
-    const sourceColumnId = parseInt(result.source.droppableId);
-    const destColumnId = parseInt(result.destination.droppableId);
+    const sourceColumnId = result.source.droppableId;
+    const destColumnId = result.destination.droppableId;
   
     // Find the source and destination columns
-    const sourceColumn = columns.find((column) => column.id === sourceColumnId);
-    const destColumn = columns.find((column) => column.id === destColumnId);
+    const sourceColumnIndex = columns.findIndex((column) => column.id === sourceColumnId);
+    const destColumnIndex = columns.findIndex((column) => column.id === destColumnId);
   
-    // Make sure both columns exist
-    if (!sourceColumn || !destColumn) {
+    // Check if the source and destination columns exist
+    if (sourceColumnIndex === -1 || destColumnIndex === -1) {
+      console.log("Source or destination column not found");
       return; // Handle the case where the columns don't exist
     }
   
+    // Get the source and destination columns using their indices
+    const sourceColumn = columns[sourceColumnIndex];
+    const destColumn = columns[destColumnIndex];
+  
     // Get the source and destination task indices
-    const sourceTaskIndex = parseInt(result.source.index);
-    const destTaskIndex = parseInt(result.destination.index);
+    const sourceTaskIndex = result.source.index;
+    const destTaskIndex = result.destination.index;
   
     // Get the task to move
     const taskToMove = sourceColumn.tasks[sourceTaskIndex];
@@ -113,6 +137,7 @@ export default function KanbanBoard() {
     // Update the state with the new columns array
     setColumns(updatedColumns);
   };
+  
   return (
     <DragDropContext onDragEnd={handleTaskDragEnd}>
       <h2 style={{ textAlign: "center" }}>PROGRESS BOARD</h2>
@@ -127,8 +152,9 @@ export default function KanbanBoard() {
         <div
           style={{
             display: "flex",
-            overflowX: "auto",
-            overflowY: "auto", // Add vertical scrollbar when columns overflow
+            // these cause nested loop warning
+            //overflowX: "auto",
+            //overflowY: "auto", // Add vertical scrollbar when columns overflow
             // Add horizontal scrollbar when columns overflow
           }}
           ref={boardRef}

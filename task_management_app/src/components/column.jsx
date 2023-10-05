@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Droppable } from "react-beautiful-dnd";
 import styled from "styled-components";
 import "./scroll.css"
@@ -33,6 +33,10 @@ const TaskList = styled.div`
 export default function Column({ title, tasks, id, addTask, updateTaskTitle, addTaskToColumn  }) {
   const [newTaskTitle, setNewTaskTitle] = useState("");
 
+  useEffect(() => {
+    console.log("Column state has been updated:", newTaskTitle);
+  }, [newTaskTitle]);
+
   const handleAddTask = () => {
     if(newTaskTitle.trim() !== "") {
       addTaskToColumn (id, newTaskTitle);
@@ -58,7 +62,7 @@ export default function Column({ title, tasks, id, addTask, updateTaskTitle, add
         {title}
       </Title>
 
-      <Droppable droppableId={`column-${id}`} key={id}>
+      <Droppable droppableId={id} key={id}>
         {(provided, snapshot) => (
           <TaskList
             ref={provided.innerRef}
