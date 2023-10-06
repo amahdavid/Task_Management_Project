@@ -14,11 +14,6 @@ const HomePage = ({ userEmail }) => {
     setIsCreatingBoard(true);
   };
 
-  // why is boardID not defined?
-  const handleBoardClick = (boardId) => {
-    navigate('/kanbanboard/${boardId}')
-  }
-  
   const handleSubmitNewBoard = () => {
     // Send a request to create a new board with the provided board name and user email
     fetch('http://localhost:5000/create_board', {

@@ -1,6 +1,7 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { DragDropContext } from "react-beautiful-dnd";
 import Column from "./column.jsx";
+import { useParams } from "react-router-dom"; // Import useParams from react-router-dom
 
 export default function KanbanBoard() {
   const [columns, setColumns] = useState([]);
@@ -12,50 +13,42 @@ export default function KanbanBoard() {
   // Use a ref to scroll to the right when a new column is added
   const boardRef = useRef(null);
 
-  const handleAddColumn = () => {
+  const { boardId } = useParams(); // Get the board_id from the URL
+
+  const handleAddColumn = async () => {
     // create a new column with the title newColumnTitle
     if (newColumnTitle.trim() === "") {
       return;
     }
   
-    // Check if a column with the same title already exists
-    const columnExists = columns.some((column) => column.title === newColumnTitle);
-  
-    // Create a unique column title
-    let uniqueColumnTitle = newColumnTitle;
-    let counter = 2;
-    while (columnExists) {
-      uniqueColumnTitle = `${newColumnTitle} (${counter})`;
-      columnExists = columns.some((column) => column.title === uniqueColumnTitle);
-      counter++;
+    try {
+      const response = await fetch(`http://localhost:5000/create_column/${boardId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          columnName: newColumnTitle,
+        }),
+      });
+
+      if (response.status === 201) {
+        const responseData = await response.json();
+        const newColumn = {
+          id: `column-${columnCounter}`,
+          title: newColumnTitle,
+          tasks: [],
+        };
+        setColumns([...columns, newColumn]);
+      } else {
+        console.log("Failed to add column");
+      }
     }
-  
-    // Create a new column with the unique title
-    const newCol = {
-      title: uniqueColumnTitle,
-      tasks: [],
-      id: `column-${columnCounter}`,
-    };
-  
-    // Increment the column counter
-    setColumnCounter(columnCounter + 1);
-  
-    // add the new column to the columns array
-    const updatedColumns = [...columns, newCol];
-  
-    // update the state
-    setColumns(updatedColumns);
-  
-    // reset the newColumnTitle
+    catch (err) {
+      console.log(err);
+    }
     setNewColumnTitle("");
-  
-    // Close the column addition prompt
     setIsAddingColumn(false);
-  
-    // Scroll to the right when a new column is added
-    if (boardRef.current) {
-      boardRef.current.scrollLeft = boardRef.current.scrollWidth;
-    }
   };
   
   const handleInputKeyDown = (e) => {

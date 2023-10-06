@@ -108,11 +108,7 @@ def create_board():
     board_data = {
         "board_name": data["boardName"],
         "user_id": data["userEmail"],
-        "columns": {
-            "todo": [],
-            "inProgress": [],
-            "done": []
-        }
+        "columns": []
     }
 
     # Insert the new board document into the database
@@ -120,7 +116,6 @@ def create_board():
 
     # Log successful board creation
     logging.info(f"Board created with ID: {board_id}")
-    logging.info(f"Board data: {board_data}")
 
     return jsonify({"message": "Board created successfully", "board_id": str(board_id)}), 201
 
@@ -210,6 +205,100 @@ def delete_board(board_id):
 
     return jsonify({"message": "Board deleted successfully"}), 200
 
+
+# Route for creating a new column
+@app.route('/create_column/<board_id>', methods=['POST'])
+def create_column(board_id):
+    data = request.json
+
+    # Log the incoming data
+    logging.info(f"Received create column request with data: {data}")
+
+    # Validate the data (you can add more validation here)
+    if 'columnName' not in data:
+        return jsonify({"error": "Column name is required"}), 400
+
+    # Create a new column document and associate it with the board
+    column_data = {
+        "column_name": data["columnName"],
+        "tasks": []
+    }
+
+    # find the board and update it with the new column
+    result = boards.find_one_and_update(
+        {"_id": ObjectId(board_id)},
+        {"$push": {"columns": column_data}}
+    )
+
+    if not result:
+        return jsonify({"error": "Board not found"}), 404
+
+    # Log successful column creation
+    logging.info(f"Column created with name: {data['columnName']}")
+
+    return jsonify({"message": "Column created successfully"}), 201
+
+
+# Route for creating a new task
+@app.route('/create_task/<board_id>/<column_id>', methods=['POST'])
+def create_task(board_id, column_id):
+    data = request.json
+
+    # Log the incoming data
+    logging.info(f"Received create task request with data: {data}")
+
+    # Validate the data (you can add more validation here)
+    if 'taskName' not in data:
+        return jsonify({"error": "Task name is required"}), 400
+
+    # Create a new task document and associate it with the column
+    task_data = {
+        "task_name": data["taskName"]
+    }
+
+    # find the board and update it with the new task
+    result = boards.find_one_and_update(
+        {"_id": ObjectId(board_id), "columns._id": ObjectId(column_id)},
+        {"$push": {"columns.$.tasks": task_data}}
+    )
+
+    if not result:
+        return jsonify({"error": "Board or column not found"}), 404
+
+    # Log successful task creation
+    logging.info(f"Task created with name: {data['taskName']}")
+
+    return jsonify({"message": "Task created successfully"}), 201
+
+
+# Route for updating a task
+@app.route('/update_task/<board_id>/<column_id>/<task_id>', methods=['PUT'])
+def update_task(board_id, column_id, task_id):
+    data = request.json
+
+    # Log the incoming data
+    logging.info(f"Received update task request with data: {data}")
+
+    if 'title' not in data:
+        return jsonify({"error": "Task title is required"}), 400
+
+    # Validate and update the task data in the database
+    updated_task = boards.find_one_and_update(
+        {"_id": ObjectId(board_id), "columns._id": ObjectId(column_id), "columns.tasks._id": ObjectId(task_id)},
+        {"$set": {"columns.$[column].tasks.$[task].task_name": data["task_name"]}},
+        array_filters=[{"column._id": ObjectId(column_id)}, {"task._id": ObjectId(task_id)}],
+    )
+
+    if not updated_task:
+        return jsonify({"error": "Task not found"}), 404
+
+    # Log successful task update
+    logging.info(f"Task with ID {task_id} updated")
+
+    return jsonify({"message": "Task updated successfully", "task": updated_task}), 200
+
+
+# Route for fetching columns
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)

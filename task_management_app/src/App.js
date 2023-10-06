@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import LoginForm from "./components/loginform";
 import SignupForm from "./components/signup";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useParams } from "react-router-dom";
 import LandingPage from "./components/landingpage";
 import Homepage from "./components/homepage";
 import Boards from "./components/boards";
@@ -12,6 +12,7 @@ import KanbanBoard from "./components/kanbanboard";
 
 function App() {
   const [userEmail, setUserEmail] = useState(""); // Initialize userEmail state
+  //const { board_id } = useParams();
 
   // Function to set userEmail when a user logs in or signs up
   const updateUserEmail = (email) => {
@@ -49,5 +50,12 @@ function App() {
     </Router>
   );
 }
+
+// wrapper component to fetch the boardId from route parameters
+// function KanbanBoardWrapper() {
+//   const { board_id } = useParams();
+
+//   return <KanbanBoard boardId={board_id} />;
+// }
 
 export default App;
