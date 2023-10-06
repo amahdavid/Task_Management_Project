@@ -299,6 +299,31 @@ def update_task(board_id, column_id, task_id):
 
 
 # Route for fetching columns
+@app.route('/get_columns/<board_id>', methods=['GET'])
+def get_columns(board_id):
+    try:
+        # Convert the board_id string to ObjectId
+        board_id_obj = ObjectId(board_id)
+
+        # Find the board document by its ObjectId
+        board = boards.find_one({"_id": board_id_obj})
+
+        if not board:
+            return jsonify({"error": "Board not found"}), 404
+
+        # Get the columns data from the board document
+        columns = board.get("columns", [])
+
+        # Extract just the column names from the columns
+        column_names = [column["column_name"] for column in columns]
+
+        # Create a response with the columns data and names
+        response_data = {"columns": columns, "column_names": column_names}
+        return jsonify(response_data), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
