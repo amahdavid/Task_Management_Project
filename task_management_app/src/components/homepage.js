@@ -32,9 +32,9 @@ const HomePage = ({ userEmail }) => {
         if (response.status === 201) {
           // board created successfully, extract the board ID from the server response
           response.json().then((data) => {
-            const newBoardId = data.boardId;
+            const newBoardId = data.board_id;
             // Add the new board to the list of boards
-            navigate(`/kanbanboard/${newBoardId}`);
+            navigate(`/kanban-board/${newBoardId}`);
           });
           // close the dialog and update created board's URL
           setIsCreatingBoard(false);

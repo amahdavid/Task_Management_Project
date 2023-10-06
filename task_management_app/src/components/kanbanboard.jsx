@@ -152,10 +152,6 @@ export default function KanbanBoard() {
         <div
           style={{
             display: "flex",
-            // these cause nested loop warning
-            //overflowX: "auto",
-            //overflowY: "auto", // Add vertical scrollbar when columns overflow
-            // Add horizontal scrollbar when columns overflow
           }}
           ref={boardRef}
         >

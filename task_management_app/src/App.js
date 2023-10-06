@@ -40,7 +40,7 @@ function App() {
         <Route 
           path="/boards" 
           element={<Boards userEmail={userEmail} />} />
-        <Route path="/kanbanboard/:boardId" element={<KanbanBoard />} />
+        <Route path="/kanban-board/:boardId" element={<KanbanBoard />} />
         <Route path="/members" element={<Members />} />
         <Route path="/calendar" element={<Calendar />} />
         <Route path="/settings" element={<Settings />} />
