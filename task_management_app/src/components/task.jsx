@@ -33,17 +33,17 @@ function bgcolorchange(props) {
 }
 
 export default function Task({ task, index, updateTask }) {
-
-  const [taskTitle, setTaskTitle] = useState(task.title);
+  const [isEditing, setIsEditing] = useState(false);
+  const [taskTitle, setTaskTitle] = useState(task.task_name);
 
   const handleTaskTitleChange = (e) => {
     setTaskTitle(e.target.value);
   };
 
-  useEffect(() => {
-    console.log("Task state has been updated:", taskTitle);
-  }, [taskTitle]);
-
+  const handleTitleBlur = () => {
+    updateTask(task.id, taskTitle);
+    setIsEditing(false);
+  };
 
   return (
     <Draggable
@@ -55,8 +55,7 @@ export default function Task({ task, index, updateTask }) {
                 {...provided.dragHandleProps}
                 ref={provided.innerRef}
                 isDragging={snapshot.isDragging}
-                // isDragable={task.isDragable}
-                // isBacklog={task.isBacklog}
+
             >
                 <div style={{display: "flex", justifyContent: "start", padding: 2}}>
                     <span>

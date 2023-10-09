@@ -22,17 +22,42 @@ export default function KanbanBoard() {
         const response = await fetch(
           `http://localhost:5000/get_columns/${boardId}`
         );
+        if (!response.ok) {
+          throw new Error('Failed to fetch columns');
+        }
+  
         const responseData = await response.json();
+
+        if (!responseData.columns) {
+          throw new Error('Failed to fetch columns');
+        }
+
+        console.log("Response data:", responseData);
         setColumns(responseData.columns);
         setColumnTitles(responseData.column_names);
-        setColumnCounter(responseData.columns.length + 1);
+  
+        // Fetch tasks for each column in parallel
+        const tasksPromises = responseData.columns.map(async (column) => {
+          const tasksResponse = await fetch(
+            `http://localhost:5000/get_tasks/${boardId}/${column._id}`
+          );
+          if (!tasksResponse.ok) {
+            throw new Error('Failed to fetch tasks');
+          }
+          const tasksResponseData = await tasksResponse.json();
+          return { ...column, tasks: tasksResponseData.tasks };
+        });
+  
+        // Wait for all tasksPromises to complete
+        const updatedColumns = await Promise.all(tasksPromises);
+        setColumns(updatedColumns);
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     };
     fetchColumns();
   }, [boardId]);
-
+  
   const handleAddColumn = async () => {
     // create a new column with the title newColumnTitle
     if (newColumnTitle.trim() === "") {
@@ -79,33 +104,87 @@ export default function KanbanBoard() {
   };
 
   // Function to add a task to a specific column
-  const addTaskToColumn = (columnId, task) => {
-    const updatedColumns = columns.map((column) => {
-      if (column.id === columnId) {
+  const addTaskToColumn = async (columnId, task) => {
+    if (task.trim() === "") {
+      return;
+    }
+    try {
+      const response = await fetch(
+        `http://localhost:5000/create_task/${boardId}/${columnId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            taskTitle: task,
+          }),
+        }
+      );
+
+      if (response.status === 201) {
+        const responseData = await response.json();
         const newTask = {
           id: `task-${taskCounter}`,
           title: task,
         };
-        column.tasks.push(newTask);
+
+        const updatedColumns = columns.map((column) => {
+          if (column.id === columnId) {
+            return { ...column, tasks: [...column.tasks, newTask] };
+          }
+          return column;
+        });
+
+        setColumns(updatedColumns);
+        setTaskCounter(taskCounter + 1);
+      } else {
+        console.log("Failed to add task");
       }
-      return column;
-    });
-    setTaskCounter(taskCounter + 1);
-    setColumns(updatedColumns);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   // Function to update tastk title
-  const updateTaskTitle = (taskId, newTitle) => {
-    const updatedColumns = columns.map((column) => {
-      column.tasks = column.tasks.map((task) => {
-        if (task.id === taskId) {
-          return { ...task, title: newTitle };
+  const updateTaskTitle = async (taskId, columnId,newTitle) => {
+    try {
+      console.log("Updating task title:", taskId, newTitle);
+
+      // make a put request to update the task title
+      const response = await fetch(
+        `http://localhost:5000/update_task/${boardId}/${columnId}/${taskId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            taskTitle: newTitle,
+          }),
         }
-        return task;
-      });
-      return column;
-    });
-    setColumns(updatedColumns);
+      );
+
+      if (response.status === 200) {
+        const responseData = await response.json();
+        // update the columns state wit the new task
+        const updatedColumns = columns.map((column) => {
+          const updatedTasks = column.tasks.map((task) => {
+            if (task.id === taskId) {
+              return { ...task, title: newTitle };
+            }
+            return task;
+          });
+          return { ...column, tasks: updatedTasks };
+        });
+
+        setColumns(updatedColumns);
+      } else {
+        console.log("Failed to update task title");
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const handleTaskDragEnd = (result) => {
@@ -159,7 +238,6 @@ export default function KanbanBoard() {
   return (
     <DragDropContext onDragEnd={handleTaskDragEnd}>
       <h2 style={{ textAlign: "center" }}>PROGRESS BOARD</h2>
-
       <div
         style={{
           display: "flex",
@@ -193,7 +271,7 @@ export default function KanbanBoard() {
                 <Column
                   title={columnTitles[index]}
                   tasks={column.tasks}
-                  id={column.id}
+                  id={column._id}
                   addTaskToColumn={addTaskToColumn}
                   updateTaskTitle={updateTaskTitle}
                 />

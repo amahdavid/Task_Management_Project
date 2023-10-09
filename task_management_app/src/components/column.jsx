@@ -30,12 +30,14 @@ const TaskList = styled.div`
   min-height: 100px;
 `;
 
-export default function Column({ title, tasks, id, addTask, updateTaskTitle, addTaskToColumn  }) {
+export default function Column({ title, tasks, id, updateTaskTitle, addTaskToColumn  }) {
   const [newTaskTitle, setNewTaskTitle] = useState("");
 
   useEffect(() => {
     console.log("Column state has been updated:", newTaskTitle);
   }, [newTaskTitle]);
+
+  //console.log("Column id:", id);
 
   const handleAddTask = () => {
     if(newTaskTitle.trim() !== "") {
@@ -69,7 +71,7 @@ export default function Column({ title, tasks, id, addTask, updateTaskTitle, add
             {...provided.droppableProps}
             isDraggingOver={snapshot.isDraggingOver}
           >
-            {tasks.map((task, index) => (
+            {tasks && tasks.map((task, index) => (
               <Task
                 key={task.id}
                 task={task}

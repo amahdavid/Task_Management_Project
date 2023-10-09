@@ -142,6 +142,7 @@ def get_boards(userEmail):
     return jsonify({"boards": boards_data}), 200
 
 
+# Route for getting a specific board
 @app.route('/get_board/<userEmail>/<boardId>', methods=['GET'])
 def get_board(userEmail, boardId):
     # Log the request to get a specific board
@@ -225,9 +226,10 @@ def create_column(board_id):
     }
 
     # find the board and update it with the new column
+    new_column_id = ObjectId()
     result = boards.find_one_and_update(
         {"_id": ObjectId(board_id)},
-        {"$push": {"columns": column_data}}
+        {"$push": {"columns": {"_id": new_column_id, **column_data}}}
     )
 
     if not result:
@@ -236,39 +238,45 @@ def create_column(board_id):
     # Log successful column creation
     logging.info(f"Column created with name: {data['columnName']}")
 
-    return jsonify({"message": "Column created successfully"}), 201
+    return jsonify({"message": "Column created successfully", "column_id": str(new_column_id)}), 201
 
 
 # Route for creating a new task
 @app.route('/create_task/<board_id>/<column_id>', methods=['POST'])
 def create_task(board_id, column_id):
-    data = request.json
+    try:
+        data = request.json
 
-    # Log the incoming data
-    logging.info(f"Received create task request with data: {data}")
+        # Log the incoming data
+        logging.info(f"Received create task request with data: {data}")
 
-    # Validate the data (you can add more validation here)
-    if 'taskName' not in data:
-        return jsonify({"error": "Task name is required"}), 400
+        # Validate the data (you can add more validation here)
+        if 'taskTitle' not in data:
+            return jsonify({"error": "Task name is required"}), 400
 
-    # Create a new task document and associate it with the column
-    task_data = {
-        "task_name": data["taskName"]
-    }
+        # Create a new task document and associate it with the column
+        task_data = {
+            "task_name": data["taskTitle"]
+        }
 
-    # find the board and update it with the new task
-    result = boards.find_one_and_update(
-        {"_id": ObjectId(board_id), "columns._id": ObjectId(column_id)},
-        {"$push": {"columns.$.tasks": task_data}}
-    )
+        new_task_id = ObjectId()
+        # Find the board and update it with the new task
+        result = boards.find_one_and_update(
+            {"_id": ObjectId(board_id), "columns._id": ObjectId(column_id)},
+            {"$push": {"columns.$.tasks": {"_id": new_task_id, **task_data}}}
+        )
 
-    if not result:
-        return jsonify({"error": "Board or column not found"}), 404
+        if not result:
+            return jsonify({"error": "Board or column not found"}), 404
 
-    # Log successful task creation
-    logging.info(f"Task created with name: {data['taskName']}")
+        # Log successful task creation
+        logging.info(f"Task created with name: {data['taskTitle']}")
 
-    return jsonify({"message": "Task created successfully"}), 201
+        return jsonify({"message": "Task created successfully", "task_id": str(new_task_id)}), 201
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({"error": str(e)}), 500
 
 
 # Route for updating a task
@@ -317,11 +325,56 @@ def get_columns(board_id):
         # Extract just the column names from the columns
         column_names = [column["column_name"] for column in columns]
 
+        # Convert ObjectId to string
+        columns = [{'_id': str(column['_id']), 'column_name': column['column_name']} for column in columns]
+
         # Create a response with the columns data and names
         response_data = {"columns": columns, "column_names": column_names}
         return jsonify(response_data), 200
 
     except Exception as e:
+        print(str(e))
+        return jsonify({"error": str(e)}), 500
+
+
+# Route for fetching tasks
+@app.route('/get_tasks/<board_id>/<column_id>', methods=['GET'])
+def get_tasks(board_id, column_id):
+    try:
+        # Convert the board_id and column_id strings to ObjectId
+        board_id_obj = ObjectId(board_id)
+        column_id_obj = ObjectId(column_id)
+
+        # Find the board document by its ObjectId
+        board = boards.find_one({"_id": board_id_obj})
+
+        if not board:
+            return jsonify({"error": "Board not found"}), 404
+
+        # Get the columns data from the board document
+        columns = board.get("columns", [])
+
+        # Find the column with the given column_id
+        column = next((column for column in columns if column["_id"] == column_id_obj), None)
+
+        if not column:
+            return jsonify({"error": "Column not found"}), 404
+
+        # Get the tasks data from the column
+        tasks = column.get("tasks", [])
+
+        # Extract just the task names from the tasks
+        task_names = [task["task_name"] for task in tasks]
+
+        # Convert ObjectId to string
+        tasks = [{'_id': str(task['_id']), 'task_name': task['task_name']} for task in tasks]
+
+        # Create a response with the tasks data and names
+        response_data = {"tasks": tasks, "task_names": task_names}
+        return jsonify(response_data), 200
+
+    except Exception as e:
+        print(str(e))
         return jsonify({"error": str(e)}), 500
 
 
