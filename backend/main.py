@@ -378,5 +378,50 @@ def get_tasks(board_id, column_id):
         return jsonify({"error": str(e)}), 500
 
 
+# Route for fetching both columns and tasks for a board
+@app.route('/get_columns_and_tasks/<board_id>', methods=['GET'])
+def get_columns_and_tasks(board_id):
+    try:
+        # Convert the board_id string to ObjectId
+        board_id_obj = ObjectId(board_id)
+
+        # Find the board document by its ObjectId
+        board = boards.find_one({"_id": board_id_obj})
+
+        if not board:
+            return jsonify({"error": "Board not found"}), 404
+
+        # Get the columns data from the board document
+        columns = board.get("columns", [])
+
+        # Extract just the column names from the columns
+        column_names = [column["column_name"] for column in columns]
+
+        # Convert ObjectId to string for columns
+        columns = [{'_id': str(column['_id']), 'column_name': column['column_name']} for column in columns]
+
+        # Fetch tasks for each column
+        for column in columns:
+            column_id = column['_id']
+            column_tasks = board.get("tasks", [])
+
+            # Extract just the task names from the tasks
+            task_names = [task["task_name"] for task in column_tasks]
+
+            # Convert ObjectId to string for tasks
+            column_tasks = [{'_id': str(task['_id']), 'task_name': task['task_name']} for task in column_tasks]
+
+            column["tasks"] = column_tasks
+            column["task_names"] = task_names
+
+        # Create a response with the combined data
+        response_data = {"columns": columns, "column_names": column_names}
+        return jsonify(response_data), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == '__main__':
     app.run(port=5000, debug=True)

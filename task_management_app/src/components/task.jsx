@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Draggable } from "react-beautiful-dnd";
 import styled from "styled-components";
 import Icon from "./Icon.js";
@@ -9,7 +9,6 @@ const Container = styled.div`
   padding: 8px;
   color: #000;
   margin-bottom: 8px;
-  min-height: 90px;
   margin-right: 10px;
   margin-left: 10px;
   background-color: ${(props) => bgcolorchange(props)};
@@ -33,16 +32,10 @@ function bgcolorchange(props) {
 }
 
 export default function Task({ task, index, updateTask }) {
-  const [isEditing, setIsEditing] = useState(false);
   const [taskTitle, setTaskTitle] = useState(task.task_name);
 
   const handleTaskTitleChange = (e) => {
     setTaskTitle(e.target.value);
-  };
-
-  const handleTitleBlur = () => {
-    updateTask(task.id, taskTitle);
-    setIsEditing(false);
   };
 
   return (
@@ -57,18 +50,10 @@ export default function Task({ task, index, updateTask }) {
                 isDragging={snapshot.isDragging}
 
             >
-                <div style={{display: "flex", justifyContent: "start", padding: 2}}>
-                    <span>
-                        <small>
-                            #{task.id}
-                        </small>
-                    </span>
-                </div>
-
                 <div style={{display: "flex", justifyContent: "center", padding: 2}}>
                   <input
                     type="text"
-                    value={taskTitle}
+                    value={task.task_name}
                     onChange={handleTaskTitleChange}
                     onBlur={() => updateTask(task.id, taskTitle)}
                   />
