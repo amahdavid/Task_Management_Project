@@ -272,7 +272,13 @@ def create_task(board_id, column_id):
         # Log successful task creation
         logging.info(f"Task created with name: {data['taskTitle']}")
 
-        return jsonify({"message": "Task created successfully", "task_id": str(new_task_id)}), 201
+        response_data = {
+            "message": "Task created successfully",
+            "task_id": str(new_task_id),
+            "task_name": data["taskTitle"],
+        }
+
+        return jsonify(response_data), 201
 
     except Exception as e:
         print(str(e))
@@ -306,7 +312,7 @@ def update_task(board_id, column_id, task_id):
     return jsonify({"message": "Task updated successfully", "task": updated_task}), 200
 
 
-# Route for fetching columns
+# Route for fetching columns with associated tasks
 @app.route('/get_columns/<board_id>', methods=['GET'])
 def get_columns(board_id):
     try:
@@ -322,14 +328,23 @@ def get_columns(board_id):
         # Get the columns data from the board document
         columns = board.get("columns", [])
 
-        # Extract just the column names from the columns
-        column_names = [column["column_name"] for column in columns]
+        # Convert ObjectId to string and retrieve tasks for each column
+        columns_with_tasks = []
+        for column in columns:
+            column_id = str(column['_id'])
+            column_name = column['column_name']
+            tasks = column.get("tasks", [])
 
-        # Convert ObjectId to string
-        columns = [{'_id': str(column['_id']), 'column_name': column['column_name']} for column in columns]
+            # Convert ObjectId to string for each task
+            tasks = [{'_id': str(task['_id']), 'task_name': task['task_name']} for task in tasks]
+
+            columns_with_tasks.append({'_id': column_id, 'column_name': column_name, 'tasks': tasks})
+
+        # Extract just the column names from the columns
+        column_names = [column['column_name'] for column in columns]
 
         # Create a response with the columns data and names
-        response_data = {"columns": columns, "column_names": column_names}
+        response_data = {"columns": columns_with_tasks, "column_names": column_names}
         return jsonify(response_data), 200
 
     except Exception as e:

@@ -32,8 +32,6 @@ const TaskList = styled.div`
 export default function Column({ title, tasks, id, updateTaskTitle, addTaskToColumn  }) {
   const [newTaskTitle, setNewTaskTitle] = useState("");
 
-  //console.log("Column id:", id);
-
   const handleAddTask = () => {
     if(newTaskTitle.trim() !== "") {
       addTaskToColumn (id, newTaskTitle);

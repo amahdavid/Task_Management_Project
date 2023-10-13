@@ -53,7 +53,7 @@ export default function Task({ task, index, updateTask }) {
                 <div style={{display: "flex", justifyContent: "center", padding: 2}}>
                   <input
                     type="text"
-                    value={task.task_name}
+                    value={task.task_name} // if task not display this is where the error lies
                     onChange={handleTaskTitleChange}
                     onBlur={() => updateTask(task.id, taskTitle)}
                   />

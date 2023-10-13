@@ -8,7 +8,10 @@ export default function KanbanBoard() {
   const [columnTitles, setColumnTitles] = useState([]); // Separate state for column titles
   const [newColumnTitle, setNewColumnTitle] = useState("");
   const [isAddingColumn, setIsAddingColumn] = useState(false);
-  const [taskCounter, setTaskCounter] = useState(1);
+  const [tasks, setTasks] = useState([]);
+  const [taskTitles, setTaskTitles] = useState([]); // Separate state for task titles
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [isAddingTask, setIsAddingTask] = useState(false);
   const [columnCounter, setColumnCounter] = useState(1);
 
   // Use a ref to scroll to the right when a new column is added
@@ -23,47 +26,32 @@ export default function KanbanBoard() {
           `http://localhost:5000/get_columns/${boardId}`
         );
         if (!response.ok) {
-          throw new Error('Failed to fetch columns');
+          throw new Error("Failed to fetch columns");
         }
-  
+
         const responseData = await response.json();
 
         if (!responseData.columns) {
-          throw new Error('Failed to fetch columns');
+          throw new Error("Failed to fetch columns");
         }
 
         console.log("Response data:", responseData);
         setColumns(responseData.columns);
         setColumnTitles(responseData.column_names);
-  
-        // Fetch tasks for each column in parallel
-        const tasksPromises = responseData.columns.map(async (column) => {
-          const tasksResponse = await fetch(
-            `http://localhost:5000/get_tasks/${boardId}/${column._id}`
-          );
-          if (!tasksResponse.ok) {
-            throw new Error('Failed to fetch tasks');
-          }
-          const tasksResponseData = await tasksResponse.json();
-          return { ...column, tasks: tasksResponseData.tasks };
-        });
-  
-        // Wait for all tasksPromises to complete
-        const updatedColumns = await Promise.all(tasksPromises);
-        setColumns(updatedColumns);
+        setTasks(responseData.tasks);
+        setTaskTitles(responseData.task_names);
       } catch (err) {
         console.error(err);
       }
     };
     fetchColumns();
   }, [boardId]);
-  
+
   const handleAddColumn = async () => {
     // create a new column with the title newColumnTitle
     if (newColumnTitle.trim() === "") {
       return;
     }
-
     try {
       const response = await fetch(
         `http://localhost:5000/create_column/${boardId}`,
@@ -80,6 +68,7 @@ export default function KanbanBoard() {
 
       if (response.status === 201) {
         const responseData = await response.json();
+        console.log("Response data:", responseData);
         const newColumn = {
           id: `column-${columnCounter}`,
           title: newColumnTitle,
@@ -87,6 +76,8 @@ export default function KanbanBoard() {
         };
         setColumns([...columns, newColumn]);
         setColumnTitles([...columnTitles, newColumnTitle]);
+        setTasks(responseData.tasks)
+        setTaskTitles(responseData.task_names)
       } else {
         console.log("Failed to add column");
       }
@@ -121,33 +112,53 @@ export default function KanbanBoard() {
           }),
         }
       );
-
+  
       if (response.status === 201) {
         const responseData = await response.json();
+        console.log("Response data (Add Task):", responseData);
+  
+        // Create a new task object
         const newTask = {
-          id: `task-${taskCounter}`,
-          title: task,
+          id: responseData.task_id,
+          title: responseData.task_title,
         };
-
-        const updatedColumns = columns.map((column) => {
-          if (column.id === columnId) {
-            return { ...column, tasks: [...column.tasks, newTask] };
-          }
-          return column;
-        });
-
+  
+        // Find the target column to add the task
+        const targetColumnIndex = columns.findIndex(
+          (column) => column._id === columnId
+        );
+  
+        if (targetColumnIndex === -1) {
+          console.log("Target column not found");
+          return;
+        }
+  
+        // Create a copy of the columns array
+        const updatedColumns = [...columns];
+        // Append the new task to the target column's tasks array
+        updatedColumns[targetColumnIndex].tasks.push(newTask);
+  
+        // Update the state with the new columns array
         setColumns(updatedColumns);
-        setTaskCounter(taskCounter + 1);
+
+        setTasks(responseData.tasks)
       } else {
         console.log("Failed to add task");
       }
     } catch (err) {
       console.log(err);
     }
+    setNewTaskTitle("");
+    setIsAddingTask(false);
   };
+  
+
+  useEffect(() => {
+    console.log("Updated columns:", columns);
+  }, [columns]);
 
   // Function to update tastk title
-  const updateTaskTitle = async (taskId, columnId,newTitle) => {
+  const updateTaskTitle = async (taskId, columnId, newTitle) => {
     try {
       console.log("Updating task title:", taskId, newTitle);
 
@@ -192,46 +203,27 @@ export default function KanbanBoard() {
       console.log("No destination, nothing to do");
       return; // No destination, nothing to do
     }
-
-    // Get the source and destination column IDs
     const sourceColumnId = result.source.droppableId;
     const destColumnId = result.destination.droppableId;
 
-    // Find the source and destination columns
     const sourceColumnIndex = columns.findIndex(
       (column) => column.id === sourceColumnId
     );
     const destColumnIndex = columns.findIndex(
       (column) => column.id === destColumnId
     );
-
-    // Check if the source and destination columns exist
     if (sourceColumnIndex === -1 || destColumnIndex === -1) {
       console.log("Source or destination column not found");
       return; // Handle the case where the columns don't exist
     }
-
-    // Get the source and destination columns using their indices
     const sourceColumn = columns[sourceColumnIndex];
     const destColumn = columns[destColumnIndex];
-
-    // Get the source and destination task indices
     const sourceTaskIndex = result.source.index;
     const destTaskIndex = result.destination.index;
-
-    // Get the task to move
     const taskToMove = sourceColumn.tasks[sourceTaskIndex];
-
-    // Remove the task from the source column
     sourceColumn.tasks.splice(sourceTaskIndex, 1);
-
-    // Add the task to the destination column
     destColumn.tasks.splice(destTaskIndex, 0, taskToMove);
-
-    // Create a copy of the columns array with the updates
     const updatedColumns = [...columns];
-
-    // Update the state with the new columns array
     setColumns(updatedColumns);
   };
 
@@ -261,7 +253,7 @@ export default function KanbanBoard() {
           >
             {columns.map((column, index) => (
               <div
-                key={column.id}
+                key={column._id}
                 style={{
                   flex: "0 0 300px", // Set a fixed width for each column
                   minWidth: "300px", // Ensure a minimum width
