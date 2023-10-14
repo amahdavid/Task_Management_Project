@@ -285,31 +285,43 @@ def create_task(board_id, column_id):
         return jsonify({"error": str(e)}), 500
 
 
-# Route for updating a task
 @app.route('/update_task/<board_id>/<column_id>/<task_id>', methods=['PUT'])
 def update_task(board_id, column_id, task_id):
-    data = request.json
+    try:
+        data = request.json
 
-    # Log the incoming data
-    logging.info(f"Received update task request with data: {data}")
+        # Log the incoming data
+        logging.info(f"Received update task request with data: {data}")
 
-    if 'title' not in data:
-        return jsonify({"error": "Task title is required"}), 400
+        if 'task_name' not in data:
+            return jsonify({"error": "Task title is required"}), 400
 
-    # Validate and update the task data in the database
-    updated_task = boards.find_one_and_update(
-        {"_id": ObjectId(board_id), "columns._id": ObjectId(column_id), "columns.tasks._id": ObjectId(task_id)},
-        {"$set": {"columns.$[column].tasks.$[task].task_name": data["task_name"]}},
-        array_filters=[{"column._id": ObjectId(column_id)}, {"task._id": ObjectId(task_id)}],
-    )
+        # Convert task_id string to ObjectId
+        task_id_obj = ObjectId(task_id)
 
-    if not updated_task:
-        return jsonify({"error": "Task not found"}), 404
+        # Validate and update the task data in the database
+        updated_task = boards.find_one_and_update(
+            {"_id": ObjectId(board_id), "columns._id": ObjectId(column_id), "columns.tasks._id": ObjectId(task_id)},
+            {"$set": {"columns.$[column].tasks.$[task].task_name": data["task_name"]}},
+            array_filters=[{"column._id": ObjectId(column_id)}, {"task._id": ObjectId(task_id)}],
+        )
 
-    # Log successful task update
-    logging.info(f"Task with ID {task_id} updated")
+        if not updated_task:
+            return jsonify({"error": "Task not found"}), 404
 
-    return jsonify({"message": "Task updated successfully", "task": updated_task}), 200
+        # Log successful task update
+        logging.info(f"Task with ID {task_id} updated")
+
+        response_data = {
+            "message": "Task updated successfully",
+            "task_id": str(task_id_obj),
+            "task_name": data["task_name"],
+        }
+
+        return jsonify(response_data), 200
+    except Exception as e:
+        logging.error(f"An error occurred while updating the task: {str(e)}")
+        return jsonify({"error": "Internal server error"}, 500)
 
 
 # Route for fetching columns with associated tasks

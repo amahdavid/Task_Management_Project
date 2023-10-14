@@ -13,6 +13,7 @@ export default function KanbanBoard() {
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [columnCounter, setColumnCounter] = useState(1);
+  const [editingTaskId, setEditingTaskId] = useState(null);
 
   // Use a ref to scroll to the right when a new column is added
   const boardRef = useRef(null);
@@ -76,8 +77,8 @@ export default function KanbanBoard() {
         };
         setColumns([...columns, newColumn]);
         setColumnTitles([...columnTitles, newColumnTitle]);
-        setTasks(responseData.tasks)
-        setTaskTitles(responseData.task_names)
+        setTasks(responseData.tasks);
+        setTaskTitles(responseData.task_names);
       } else {
         console.log("Failed to add column");
       }
@@ -88,10 +89,8 @@ export default function KanbanBoard() {
     setIsAddingColumn(false);
   };
 
-  const handleInputKeyDown = (e) => {
-    if (e.key === "Enter") {
-      handleAddColumn();
-    }
+  const handleTitleClick = (taskId) => {
+    setEditingTaskId(taskId);
   };
 
   // Function to add a task to a specific column
@@ -112,33 +111,33 @@ export default function KanbanBoard() {
           }),
         }
       );
-  
+
       if (response.status === 201) {
         const responseData = await response.json();
         console.log("Response data (Add Task):", responseData);
-        console.log("Response data.tasks:", responseData.task_id)
-        console.log("Response data.task_names:", responseData.task_name)
+        console.log("Response data.tasks:", responseData.task_id);
+        console.log("Response data.task_names:", responseData.task_name);
         // Create a new task object
         const newTask = {
           id: responseData.task_id,
-          task_name: task,
+          task_name: task, // if task title not showing up whe
         };
-  
+
         // Find the target column to add the task
         const targetColumnIndex = columns.findIndex(
           (column) => column._id === columnId
         );
-  
+
         if (targetColumnIndex === -1) {
           console.log("Target column not found");
           return;
         }
-  
+
         // Create a copy of the columns array
         const updatedColumns = [...columns];
         // Append the new task to the target column's tasks array
         updatedColumns[targetColumnIndex].tasks.push(newTask);
-  
+
         // Update the state with the new columns array
         setColumns(updatedColumns);
       } else {
@@ -151,8 +150,29 @@ export default function KanbanBoard() {
     setIsAddingTask(false);
   };
 
+  const handleInputKeyDown = (e) => {
+    if (e.key === "Enter") {
+      if (isAddingColumn) {
+        handleAddColumn();
+      } else if (isAddingTask) {
+        if (editingTaskId) {
+          // Update an existing task
+          const taskToUpdate = tasks.find((task) => task._id === editingTaskId);
+          updateTaskTitle(taskToUpdate.columnId, editingTaskId, newTaskTitle);
+          setEditingTaskId(null);
+        } else {
+          // Add a new task
+          //addTaskToColumn(columnId, newTaskTitle);
+        }
+      } else {
+        console.log("No action to take");
+      }
+    }
+  };
+  
+
   // Function to update tastk title
-  const updateTaskTitle = async (taskId, columnId, newTitle) => {
+  const updateTaskTitle = async (columnId, taskId, newTitle) => {
     try {
       console.log("Updating task title:", taskId, newTitle);
 
@@ -165,7 +185,7 @@ export default function KanbanBoard() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            taskTitle: newTitle,
+            task_name: newTitle,
           }),
         }
       );
@@ -175,8 +195,8 @@ export default function KanbanBoard() {
         // update the columns state wit the new task
         const updatedColumns = columns.map((column) => {
           const updatedTasks = column.tasks.map((task) => {
-            if (task.id === taskId) {
-              return { ...task, title: newTitle };
+            if (task._id === taskId) {
+              return { ...task, task_name: newTitle };
             }
             return task;
           });

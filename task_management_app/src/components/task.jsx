@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Draggable } from "react-beautiful-dnd";
 import styled from "styled-components";
 import Icon from "./Icon.js";
@@ -18,7 +18,6 @@ const Container = styled.div`
   flex-direction: column;
 `;
 
-
 function bgcolorchange(props) {
   return props.isDragging
     ? "skyblue"
@@ -31,43 +30,67 @@ function bgcolorchange(props) {
     : "lightgreen";
 }
 
-export default function Task({ task, index, updateTask }) {
+export default function Task({ task, index, updateTask, columnId }) {
   const [taskTitle, setTaskTitle] = useState(task.task_name);
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleTaskTitleChange = (e) => {
     setTaskTitle(e.target.value);
   };
 
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleBlur = () => {
+    setIsEditing(false);
+    if (taskTitle !== task.task_name) {
+      updateTask(columnId, task._id, taskTitle);
+    }
+  };
+
+  const handleInputKeyDown = (e) => {
+    if (e.key === "Enter") {
+      updateTask(columnId, task.id, taskTitle);
+      setIsEditing(false);
+    }
+  };
+
   return (
     <Draggable
-      draggableId={`task-${task.id}`} key={task.id} index={index}>
-
-        {(provided, snapshot) => (
-            <Container
-                {...provided.draggableProps}
-                {...provided.dragHandleProps}
-                ref={provided.innerRef}
-                isDragging={snapshot.isDragging}
-
-            >
-                <div style={{display: "flex", justifyContent: "center", padding: 2}}>
-                  <input
-                    type="text"
-                    value={task.task_name} // if task not display this is where the error lies
-                    onChange={handleTaskTitleChange}
-                    onBlur={() => updateTask(task.id, taskTitle)}
-                  />
-                </div>  
-                <Icon>
-                    <div>
-                        <Avatar
-                            src={"https://wallpaperswide.com/adventure_time___finn-wallpapers.html" + task.id}
-                            />
-                    </div>
-                </Icon>
-                {provided.placeholder}
-            </Container>
+      draggableId={`task-${task._id}`} key={task._id} index={index}
+    >
+      {(provided, snapshot) => (
+        <Container
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          ref={provided.innerRef}
+          isDragging={snapshot.isDragging}
+        >
+          <div style={{ display: "flex", justifyContent: "center", padding: 2 }}>
+            {isEditing ? (
+              <input
+                type="text"
+                value={taskTitle}
+                onChange={handleTaskTitleChange}
+                onBlur={handleBlur}
+                onKeyDown={handleInputKeyDown}
+                autoFocus
+              />
+            ) : (
+              <div onClick={handleEditClick}>{task.task_name}</div>
             )}
-      </Draggable>
+          </div>
+          <Icon>
+            <div>
+              <Avatar
+                src={"https://wallpaperswide.com/adventure_time___finn-wallpapers.html" + task.id}
+              />
+            </div>
+          </Icon>
+          {provided.placeholder}
+        </Container>
+      )}
+    </Draggable>
   );
 }
