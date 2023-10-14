@@ -116,11 +116,12 @@ export default function KanbanBoard() {
       if (response.status === 201) {
         const responseData = await response.json();
         console.log("Response data (Add Task):", responseData);
-  
+        console.log("Response data.tasks:", responseData.task_id)
+        console.log("Response data.task_names:", responseData.task_name)
         // Create a new task object
         const newTask = {
           id: responseData.task_id,
-          title: responseData.task_title,
+          task_name: task,
         };
   
         // Find the target column to add the task
@@ -140,8 +141,6 @@ export default function KanbanBoard() {
   
         // Update the state with the new columns array
         setColumns(updatedColumns);
-
-        setTasks(responseData.tasks)
       } else {
         console.log("Failed to add task");
       }
@@ -151,11 +150,6 @@ export default function KanbanBoard() {
     setNewTaskTitle("");
     setIsAddingTask(false);
   };
-  
-
-  useEffect(() => {
-    console.log("Updated columns:", columns);
-  }, [columns]);
 
   // Function to update tastk title
   const updateTaskTitle = async (taskId, columnId, newTitle) => {
