@@ -220,11 +220,14 @@ export default function KanbanBoard() {
     const sourceColumnId = result.source.droppableId;
     const destColumnId = result.destination.droppableId;
 
+    console.log("Source column:", sourceColumnId);
+    console.log("Destination column:", destColumnId);
+
     const sourceColumnIndex = columns.findIndex(
-      (column) => column.id === sourceColumnId
+      (column) => column._id === sourceColumnId
     );
     const destColumnIndex = columns.findIndex(
-      (column) => column.id === destColumnId
+      (column) => column._id === destColumnId
     );
     if (sourceColumnIndex === -1 || destColumnIndex === -1) {
       console.log("Source or destination column not found");
