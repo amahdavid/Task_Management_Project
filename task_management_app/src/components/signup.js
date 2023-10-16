@@ -13,6 +13,12 @@ const SignupForm = ({ updateUserEmail }) => {
 
   const navigate = useNavigate();
 
+  const handleSignupSuccess = (token, email) => {
+    localStorage.setItem("token", token);
+    updateUserEmail(formData.email);
+    navigate("/homepage");
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault(); // Prevent the default form submission behavior
 
@@ -51,14 +57,18 @@ const SignupForm = ({ updateUserEmail }) => {
     })
       // If the response is successful, redirect to the home page
       .then((response) => {
-        console.log("before if");
         if (response.status === 201) {
           updateUserEmail(formData.email);
           console.log("Sign up successful!");
           navigate("/homepage");
         }
       })
-
+      .then((data) => {
+        if (data) {
+          const { access_token, email } = data;
+          handleSignupSuccess(access_token, email);
+        }
+      })
       .catch((error) => {
         console.error("Error:", error);
       });

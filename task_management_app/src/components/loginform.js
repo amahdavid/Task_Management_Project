@@ -8,8 +8,13 @@ const LoginForm = ({ updateUserEmail }) => {
     password: "",
   });
 
-
   const navigate = useNavigate();
+
+  const handleLoginSuccess = (token, email) => {
+    localStorage.setItem("token", token);
+    updateUserEmail(formData.email);
+    navigate("/homepage");
+  }
 
   const handleSubmit = async (event) => {
     event.preventDefault(); // Prevent the default form submission behavior
@@ -24,9 +29,11 @@ const LoginForm = ({ updateUserEmail }) => {
       });
 
       if (response.status === 200) {
-        updateUserEmail(formData.email);
+        const data = await response.json();
+        const {access_token, email} = data;
+        console.log("token: ", access_token);
         console.log("Login successful!");
-        navigate("/homepage");
+        handleLoginSuccess(access_token, email);
       } else {
         console.log("Login failed.");
         alert("Inavlid email or password. Please try again.");

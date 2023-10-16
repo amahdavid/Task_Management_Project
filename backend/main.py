@@ -1,8 +1,12 @@
+from functools import wraps
+
 from bson import ObjectId
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_jwt_extended import jwt_required, JWTManager, get_jwt_identity, create_access_token
 from pymongo import MongoClient, ReturnDocument
 import logging
+from datetime import datetime, timedelta
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG,
@@ -24,10 +28,16 @@ db = client.get_database()
 users = db['task_management_users']
 boards = db['task_management_boards']
 
+app.config['JWT_SECRET_KEY'] = 'your_secret_key'  # Change this to your secret key
+jwt = JWTManager(app)
 
-# In-memory storage for user data (Replace with your database)
-# Note: You have two "users" variables, you should remove the in-memory one to avoid conflicts
-# users = []
+
+@app.route('/protected_route', methods=['GET'])
+@jwt_required
+def protected_route(user_email):
+    current_user = get_jwt_identity()
+    return jsonify(message=f'This route is protected! Welcome, {current_user}.')
+
 
 # Route for user registration
 @app.route('/signup', methods=['POST'])
@@ -45,13 +55,14 @@ def signup():
     if users.find_one({"email": data["email"]}):
         return jsonify({"error": "Email already exists"}), 400
 
-    # Store the user data in MongoDB (Replace this with database insertion)
     users.insert_one(data)
 
     # Log successful registration
+    user_email = data['email']
+    access_token = create_access_token(identity=user_email)
     logging.info("User registration successful")
 
-    return jsonify({"message": "Registration successful"}), 201
+    return jsonify({"message": "Registration successful", "access_token": access_token}), 201
 
 
 # Route for user login
@@ -66,12 +77,12 @@ def login():
     if 'email' not in data or 'password' not in data:
         return jsonify({"error": "Email and password are required"}), 400
 
-    # Check if the email and password match (Replace this with your logic)
+    # Check if the email and password match
     user = users.find_one({"email": data["email"], "password": data["password"]})
     if user:
-        # Log successful login
-        logging.info("Login successful")
-        return jsonify({"message": "Login successful"}), 200
+        user_email = user['email']
+        access_token = create_access_token(identity=user_email)
+        return jsonify({'message': 'Login successful', 'access_token': access_token}), 200
 
     # Log failed login attempt
     logging.warning("Login failed. Email or password is incorrect.")
