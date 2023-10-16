@@ -212,6 +212,34 @@ export default function KanbanBoard() {
     }
   };
 
+  const updateTaskPositionOnServer = async (taskId, oldColumnId, newColumnId, newPosition) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/update_task_position/${boardId}/${newColumnId}/${taskId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },  
+          body: JSON.stringify({
+            oldColumnId,
+            newColumnId,
+            newPosition,
+          }),
+        }
+      );
+  
+      if (response.status === 200) {
+        console.log("Task position updated on the server.");
+      } else {
+        console.log("Failed to update task position on the server");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  
+
   const handleTaskDragEnd = (result) => {
     if (!result.destination) {
       console.log("No destination, nothing to do");
@@ -219,9 +247,6 @@ export default function KanbanBoard() {
     }
     const sourceColumnId = result.source.droppableId;
     const destColumnId = result.destination.droppableId;
-
-    console.log("Source column:", sourceColumnId);
-    console.log("Destination column:", destColumnId);
 
     const sourceColumnIndex = columns.findIndex(
       (column) => column._id === sourceColumnId
@@ -238,6 +263,10 @@ export default function KanbanBoard() {
     const sourceTaskIndex = result.source.index;
     const destTaskIndex = result.destination.index;
     const taskToMove = sourceColumn.tasks[sourceTaskIndex];
+
+    // update the server
+    updateTaskPositionOnServer(taskToMove._id, sourceColumnId, destColumnId, destTaskIndex);
+
     sourceColumn.tasks.splice(sourceTaskIndex, 1);
     destColumn.tasks.splice(destTaskIndex, 0, taskToMove);
     const updatedColumns = [...columns];

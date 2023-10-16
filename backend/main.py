@@ -450,5 +450,74 @@ def get_columns_and_tasks(board_id):
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/update_task_position/<board_id>/<column_id>/<task_id>', methods=['PUT'])
+def update_task_position(board_id, column_id, task_id):
+    try:
+        data = request.json
+
+        # Log the incoming data
+        logging.info(f"Received update task position request with data: {data}")
+
+        # Validate and extract the necessary data
+        if 'newColumnId' not in data or 'newPosition' not in data:
+            return jsonify({"error": "New column ID and position are required"}), 400
+
+        new_column_id = data["newColumnId"]
+        new_position = data["newPosition"]
+
+        # Fetch the board based on board_id
+        board = boards.find_one({"_id": ObjectId(board_id)})
+
+        if not board:
+            return jsonify({"error": "Board not found"}), 404
+
+        # Find and update the task's position within the specified column
+        task_to_move = None
+        source_column = None
+        for column in board.get("columns", []):
+            for task in column.get("tasks", []):
+                if str(task["_id"]) == task_id:
+                    task_to_move = task
+                    source_column = column
+                    break
+
+            if task_to_move:
+                break
+
+        if task_to_move is None:
+            return jsonify({"error": "Task not found in the board or column"}), 404
+
+        # remove the task from the source column
+        source_column["tasks"].remove(task_to_move)
+
+        # find the destination column and position
+        destination_column_id = new_column_id
+        destination_position = new_position
+
+        # insert the task into the destination column
+        destination_column = next((column for column in board.get("columns", [])
+                                   if str(column["_id"]) == destination_column_id), None)
+        if destination_column:
+            destination_column["tasks"].insert(destination_position, task_to_move)
+
+        # Update the board in the database
+        result = boards.find_one_and_update(
+            {"_id": ObjectId(board_id)},
+            {"$set": {"columns": board["columns"]}}
+        )
+
+        if result is None:
+            return jsonify({"error": "Failed to update task position"}), 500
+
+        # Log successful task position update
+        logging.info(f"Task position updated successfully in board with ID {board_id}")
+
+        return jsonify({"message": "Task position updated successfully"}), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
