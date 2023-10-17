@@ -2,47 +2,42 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './homepage.css'; // Import your CSS file for styling
 
-const HomePage = ({ userEmail }) => {
+const HomePage = () => {
+  const [userEmail, setUserEmail] = useState('');
   const [isCreatingBoard, setIsCreatingBoard] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
-  const [boards, setBoards] = useState([]); // State variable to store boards
+  const [boards, setBoards] = useState([]);
 
   const navigate = useNavigate();
 
   const handleCreateBoard = () => {
-    // Open the dialog for creating a new board
     setIsCreatingBoard(true);
   };
 
   const handleSubmitNewBoard = () => {
-    // Send a request to create a new board with the provided board name and user email
     fetch('http://localhost:5000/create_board', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + localStorage.getItem('token'),
       },
       body: JSON.stringify({ boardName: newBoardName, userEmail: userEmail }),
     })
       .then((response) => {
         if (response.status === 201) {
-          // board created successfully, extract the board ID from the server response
           response.json().then((data) => {
             const newBoardId = data.board_id;
-            // Add the new board to the list of boards
             navigate(`/kanban-board/${newBoardId}`);
           });
-          // close the dialog and update created board's URL
           setIsCreatingBoard(false);
           setNewBoardName('');
         } else {
-          // Handle errors, e.g., display an error message to the user
           console.error('Error creating board:', response.statusText);
         }
       })
       .catch((error) => {
         console.error('Error creating board:', error);
       });
-
     setIsCreatingBoard(false);
     setNewBoardName('');
   };
@@ -51,15 +46,16 @@ const HomePage = ({ userEmail }) => {
     fetch(`http://localhost:5000/get_boards/${userEmail}`
     , {
       method: 'GET',
+      headers: {
+        'Authorization': 'Bearer ' + localStorage.getItem('token'),
+      },
     })
       .then((response) => {
         if (response.status === 200) {
-          // Handle the response here, e.g., update the boards state variable
           response.json().then((data) => {
             setBoards(data.boards);
           });
         } else {
-          // Handle errors, e.g., display an error message to the user
           console.error('Error fetching boards:', response.statusText);
         }
       })
@@ -69,8 +65,16 @@ const HomePage = ({ userEmail }) => {
   };
 
   useEffect(() => {
-    // Fetch the user's boards when the component mounts
-    fetchBoards();
+    const token = localStorage.getItem('token');
+    const userEmail = localStorage.getItem('email');
+    console.log("email: ", userEmail)
+    if (token && userEmail) {
+      setUserEmail(userEmail);
+
+      fetchBoards();
+    } else {
+      navigate('/login');
+    }
   }, [userEmail]);
 
   return (

@@ -6,7 +6,7 @@ from flask_cors import CORS
 from flask_jwt_extended import jwt_required, JWTManager, get_jwt_identity, create_access_token
 from pymongo import MongoClient, ReturnDocument
 import logging
-from datetime import datetime, timedelta
+#from datetime import datetime, timedelta
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG,
@@ -42,214 +42,239 @@ def protected_route(user_email):
 # Route for user registration
 @app.route('/signup', methods=['POST'])
 def signup():
-    data = request.json  # Get JSON data from the request body
+    try:
+        data = request.json  # Get JSON data from the request body
 
-    # Log the incoming data
-    logging.info(f"Received signup request with data: {data}")
+        # Log the incoming data
+        logging.info(f"Received signup request with data: {data}")
 
-    # Validate the data (you can add more validation here)
-    if 'email' not in data or 'password' not in data:
-        return jsonify({"error": "Email and password are required"}), 400
+        # Validate the data (you can add more validation here)
+        if 'email' not in data or 'password' not in data:
+            return jsonify({"error": "Email and password are required"}), 400
 
-    # Check if the email is already registered (Replace this with database query)
-    if users.find_one({"email": data["email"]}):
-        return jsonify({"error": "Email already exists"}), 400
+        # Check if the email is already registered (Replace this with a database query)
+        if users.find_one({"email": data["email"]}):
+            return jsonify({"error": "Email already exists"}), 400
 
-    users.insert_one(data)
+        users.insert_one(data)
 
-    # Log successful registration
-    user_email = data['email']
-    access_token = create_access_token(identity=user_email)
-    logging.info("User registration successful")
+        # Log successful registration
+        user_email = data['email']
+        access_token = create_access_token(identity=user_email)
+        logging.info("User registration successful")
 
-    return jsonify({"message": "Registration successful", "access_token": access_token}), 201
+        return jsonify({"message": "Registration successful", "access_token": access_token}), 201
+
+    except Exception as e:
+        # Handle any exceptions that occur during signup
+        logging.error(f"Error during signup: {str(e)}")
+        return jsonify({"error": "An error occurred during signup"}), 500
 
 
 # Route for user login
 @app.route('/login', methods=['POST'])
 def login():
-    data = request.json  # Get JSON data from the request body
+    try:
+        data = request.json  # Get JSON data from the request body
 
-    # Log the incoming login attempt
-    logging.info(f"Received login request with data: {data}")
+        # Log the incoming login attempt
+        logging.info(f"Received login request with data: {data}")
 
-    # Validate the data (you can add more validation here)
-    if 'email' not in data or 'password' not in data:
-        return jsonify({"error": "Email and password are required"}), 400
+        # Validate the data (you can add more validation here)
+        if 'email' not in data or 'password' not in data:
+            return jsonify({"error": "Email and password are required"}), 400
 
-    # Check if the email and password match
-    user = users.find_one({"email": data["email"], "password": data["password"]})
-    if user:
-        user_email = user['email']
-        access_token = create_access_token(identity=user_email)
-        return jsonify({'message': 'Login successful', 'access_token': access_token}), 200
+        # Check if the email and password match
+        user = users.find_one({"email": data["email"], "password": data["password"]})
+        if user:
+            user_email = user['email']
+            access_token = create_access_token(identity=user_email)
+            return jsonify({'message': 'Login successful', 'access_token': access_token}), 200
 
-    # Log failed login attempt
-    logging.warning("Login failed. Email or password is incorrect.")
-    return jsonify({"error": "Login failed. Email or password is incorrect."}), 401
-
-
-# New route to print user information (for debugging/testing purposes)
-@app.route('/print_users', methods=['GET'])
-def print_users():
-    # Log the request to print user information
-    logging.info("Received request to print user information")
-
-    # Iterate through the list of users and print their attributes
-    user_info = []
-    for user in users.find():
-        user_info.append({"email": user['email'], "password": user['password']})
-
-    return jsonify({"users": user_info}), 200
+        # Log failed login attempt
+        logging.warning("Login failed. Email or password is incorrect.")
+        return jsonify({"error": "Login failed. Email or password is incorrect."}), 401
+    except Exception as e:
+        # Handle any exceptions that occur during login
+        logging.error(f"Error during login: {str(e)}")
+        return jsonify({"error": "An error occurred during login"}), 500
 
 
 # Route for creating a new board
 @app.route('/create_board', methods=['POST'])
 def create_board():
-    data = request.json  # Get JSON data from the request body
+    try:
+        data = request.json  # Get JSON data from the request body
 
-    # log the incoming data
-    logging.info(f"Received create board request with data: {data}")
+        # log the incoming data
+        logging.info(f"Received create board request with data: {data}")
 
-    # Validate the data (you can add more validation here)
-    if 'boardName' not in data or 'userEmail' not in data:
-        return jsonify({"error": "User ID and board name are required"}), 400
+        # Validate the data (you can add more validation here)
+        if 'boardName' not in data or 'userEmail' not in data:
+            return jsonify({"error": "User ID and board name are required"}), 400
 
-    # Create a new board document and associate it with the user
-    board_data = {
-        "board_name": data["boardName"],
-        "user_id": data["userEmail"],
-        "columns": []
-    }
+        # Create a new board document and associate it with the user
+        board_data = {
+            "board_name": data["boardName"],
+            "user_id": data["userEmail"],
+            "columns": []
+        }
 
-    # Insert the new board document into the database
-    board_id = boards.insert_one(board_data).inserted_id
+        # Insert the new board document into the database
+        board_id = boards.insert_one(board_data).inserted_id
 
-    # Log successful board creation
-    logging.info(f"Board created with ID: {board_id}")
-
-    return jsonify({"message": "Board created successfully", "board_id": str(board_id)}), 201
+        # Log successful board creation
+        logging.info(f"Board created with ID: {board_id}")
+        return jsonify({"message": "Board created successfully", "board_id": str(board_id)}), 201
+    except Exception as e:
+        # Handle any exceptions that occur during board creation
+        logging.error(f"Error during board creation: {str(e)}")
+        return jsonify({"error": "An error occurred during board creation"}), 500
 
 
 # Add a route to fetch boards associated with a user
 @app.route('/get_boards/<userEmail>', methods=['GET'])
 def get_boards(userEmail):
-    # Log the request to get boards
-    logging.info(f"Received request to get boards for user with email: {userEmail}")
+    try:
+        # Log the request to get boards
+        logging.info(f"Received request to get boards for user with email: {userEmail}")
 
-    # Get all boards associated with the user
-    user_boards = boards.find({"user_id": userEmail})
+        # Get all boards associated with the user
+        user_boards = boards.find({"user_id": userEmail})
 
-    # Extract relevant information from each board document
-    boards_data = [
-        {
-            "board_id": str(board["_id"]),
-            "board_name": board["board_name"],
-            # Add other board properties as needed
-        }
-        for board in user_boards
-    ]
+        # Extract relevant information from each board document
+        boards_data = [
+            {
+                "board_id": str(board["_id"]),
+                "board_name": board["board_name"],
+                # Add other board properties as needed
+            }
+            for board in user_boards
+        ]
 
-    return jsonify({"boards": boards_data}), 200
+        return jsonify({"boards": boards_data}), 200
+    except Exception as e:
+        # Handle any exceptions that occur during board retrieval
+        logging.error(f"Error during board retrieval: {str(e)}")
+        return jsonify({"error": "An error occurred during board retrieval"}), 500
 
 
 # Route for getting a specific board
 @app.route('/get_board/<userEmail>/<boardId>', methods=['GET'])
 def get_board(userEmail, boardId):
-    # Log the request to get a specific board
-    logging.info(f"Received request to get board with ID {boardId} for user with email: {userEmail}")
+    try:
+        # Log the request to get a specific board
+        logging.info(f"Received request to get board with ID {boardId} for user with email: {userEmail}")
 
-    # Fetch the specific board associated with the user and the given board_id
-    board = boards.find_one({"user_id": userEmail, "_id": ObjectId(boardId)})
+        # Fetch the specific board associated with the user and the given board_id
+        board = boards.find_one({"user_id": userEmail, "_id": ObjectId(boardId)})
 
-    if board is None:
-        # Handle the case where the board doesn't exist or isn't associated with the user
-        return jsonify({"message": "Board not found"}), 404
+        if board is None:
+            # Handle the case where the board doesn't exist or isn't associated with the user
+            return jsonify({"message": "Board not found"}), 404
 
-    # Extract relevant information from the board document
-    board_data = {
-        "board_id": str(board["_id"]),
-        "board_name": board["board_name"],
-        # Add other board properties as needed
-    }
+        # Extract relevant information from the board document
+        board_data = {
+            "board_id": str(board["_id"]),
+            "board_name": board["board_name"],
+            # Add other board properties as needed
+        }
 
-    return jsonify({"board": board_data}), 200
+        return jsonify({"board": board_data}), 200
+    except Exception as e:
+        # Handle any exceptions that occur during board retrieval
+        logging.error(f"Error during board retrieval: {str(e)}")
+        return jsonify({"error": "An error occurred during board retrieval"}), 500
 
 
 # Route for updating a board
 @app.route('/update_board/<board_id>', methods=['PUT'])
 def update_board(board_id):
-    data = request.json  # Get JSON data from the request body
+    try:
+        data = request.json  # Get JSON data from the request body
 
-    # Log the incoming data
-    logging.info(f"Received update board request for board with ID {board_id} with data: {data}")
+        # Log the incoming data
+        logging.info(f"Received update board request for board with ID {board_id} with data: {data}")
 
-    # Validate and update the board data in the database
-    updated_board = boards.find_one_and_update(
-        {"_id": ObjectId(board_id)},
-        {"$set": {"board_name": data["board_name"], "columns": data["columns"]}},
-        return_document=ReturnDocument.AFTER
-    )
+        # Validate and update the board data in the database
+        updated_board = boards.find_one_and_update(
+            {"_id": ObjectId(board_id)},
+            {"$set": {"board_name": data["board_name"], "columns": data["columns"]}},
+            return_document=ReturnDocument.AFTER
+        )
 
-    if not updated_board:
-        return jsonify({"error": "Board not found"}), 404
+        if not updated_board:
+            return jsonify({"error": "Board not found"}), 404
 
-    # Log successful board update
-    logging.info(f"Board with ID {board_id} updated")
+        # Log successful board update
+        logging.info(f"Board with ID {board_id} updated")
 
-    return jsonify({"message": "Board updated successfully", "board": updated_board}), 200
+        return jsonify({"message": "Board updated successfully", "board": updated_board}), 200
+    except Exception as e:
+        # Handle any exceptions that occur during board update
+        logging.error(f"Error during board update: {str(e)}")
+        return jsonify({"error": "An error occurred during board update"}), 500
 
 
 # Route for deleting a board
 @app.route('/delete_board/<board_id>', methods=['DELETE'])
 def delete_board(board_id):
-    # Log the request to delete a board
-    logging.info(f"Received request to delete board with ID: {board_id}")
+    try:
+        # Log the request to delete a board
+        logging.info(f"Received request to delete board with ID: {board_id}")
 
-    # Delete the board from the database based on the provided board_id
-    result = boards.delete_one({"_id": ObjectId(board_id)})
+        # Delete the board from the database based on the provided board_id
+        result = boards.delete_one({"_id": ObjectId(board_id)})
 
-    if result.deleted_count == 0:
-        return jsonify({"error": "Board not found"}), 404
+        if result.deleted_count == 0:
+            return jsonify({"error": "Board not found"}), 404
 
-    # Log successful board deletion
-    logging.info(f"Board with ID {board_id} deleted")
+        # Log successful board deletion
+        logging.info(f"Board with ID {board_id} deleted")
 
-    return jsonify({"message": "Board deleted successfully"}), 200
+        return jsonify({"message": "Board deleted successfully"}), 200
+    except Exception as e:
+        # Handle any exceptions that occur during board deletion
+        logging.error(f"Error during board deletion: {str(e)}")
+        return jsonify({"error": "An error occurred during board deletion"}), 500
 
 
 # Route for creating a new column
 @app.route('/create_column/<board_id>', methods=['POST'])
 def create_column(board_id):
-    data = request.json
+    try:
+        data = request.json
 
-    # Log the incoming data
-    logging.info(f"Received create column request with data: {data}")
+        # Log the incoming data
+        logging.info(f"Received create column request with data: {data}")
 
-    # Validate the data (you can add more validation here)
-    if 'columnName' not in data:
-        return jsonify({"error": "Column name is required"}), 400
+        # Validate the data (you can add more validation here)
+        if 'columnName' not in data:
+            return jsonify({"error": "Column name is required"}), 400
 
-    # Create a new column document and associate it with the board
-    column_data = {
-        "column_name": data["columnName"],
-        "tasks": []
-    }
+        # Create a new column document and associate it with the board
+        column_data = {
+            "column_name": data["columnName"],
+            "tasks": []
+        }
 
-    # find the board and update it with the new column
-    new_column_id = ObjectId()
-    result = boards.find_one_and_update(
-        {"_id": ObjectId(board_id)},
-        {"$push": {"columns": {"_id": new_column_id, **column_data}}}
-    )
+        # find the board and update it with the new column
+        new_column_id = ObjectId()
+        result = boards.find_one_and_update(
+            {"_id": ObjectId(board_id)},
+            {"$push": {"columns": {"_id": new_column_id, **column_data}}}
+        )
 
-    if not result:
-        return jsonify({"error": "Board not found"}), 404
+        if not result:
+            return jsonify({"error": "Board not found"}), 404
 
-    # Log successful column creation
-    logging.info(f"Column created with name: {data['columnName']}")
+        # Log successful column creation
+        logging.info(f"Column created with name: {data['columnName']}")
+        return jsonify({"message": "Column created successfully", "column_id": str(new_column_id)}), 201
 
-    return jsonify({"message": "Column created successfully", "column_id": str(new_column_id)}), 201
+    except Exception as e:
+        print(str(e))
+        return jsonify({"error": str(e)}), 500
 
 
 # Route for creating a new task

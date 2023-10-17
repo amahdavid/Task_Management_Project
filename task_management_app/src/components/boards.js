@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from "react";
 import "./board.css"; // Import your CSS file
 
-// Define an array of random image URLs
 const randomImageURLs = [
   "https://picsum.photos/200/300",
   "https://picsum.photos/200/301",
   "https://picsum.photos/200/302",
-  // Add more random image URLs as needed
 ];
 
 const getRandomImageURL = () => {
-  // Generate a random index to select a random image URL
   const randomIndex = Math.floor(Math.random() * randomImageURLs.length);
   return randomImageURLs[randomIndex];
 };
 
-const Boards = ({ userEmail }) => {
+const Boards = () => {
+  const userEmail = localStorage.getItem("email");
   const [boards, setBoards] = useState([]);
 
   useEffect(() => {
@@ -37,7 +35,7 @@ const Boards = ({ userEmail }) => {
       .catch((error) => {
         console.error("Error fetching boards:", error);
       });
-  }, []);
+  }, [userEmail]);
 
   return (
     <div className="boards-container">

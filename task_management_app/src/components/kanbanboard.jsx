@@ -1,19 +1,19 @@
 import React, { useState, useRef, useEffect } from "react";
 import { DragDropContext } from "react-beautiful-dnd";
 import Column from "./column.jsx";
-import { useParams } from "react-router-dom"; // Import useParams from react-router-dom
+import { useParams } from "react-router-dom";
 
 export default function KanbanBoard() {
-  const [columns, setColumns] = useState([]);
-  const [columnTitles, setColumnTitles] = useState([]); // Separate state for column titles
-  const [newColumnTitle, setNewColumnTitle] = useState("");
-  const [isAddingColumn, setIsAddingColumn] = useState(false);
-  const [tasks, setTasks] = useState([]);
-  const [taskTitles, setTaskTitles] = useState([]); // Separate state for task titles
-  const [newTaskTitle, setNewTaskTitle] = useState("");
-  const [isAddingTask, setIsAddingTask] = useState(false);
-  const [columnCounter, setColumnCounter] = useState(1);
-  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [columns, setColumns]                = useState([]);
+  const [columnTitles, setColumnTitles]      = useState([]);
+  const [newColumnTitle, setNewColumnTitle]  = useState("");
+  const [isAddingColumn, setIsAddingColumn]  = useState(false);
+  const [tasks, setTasks]                    = useState([]);
+  const [taskTitles, setTaskTitles]          = useState([]); 
+  const [newTaskTitle, setNewTaskTitle]      = useState("");
+  const [isAddingTask, setIsAddingTask]      = useState(false);
+  const [columnCounter, setColumnCounter]    = useState(1);
+  const [editingTaskId, setEditingTaskId]    = useState(null);
 
   // Use a ref to scroll to the right when a new column is added
   const boardRef = useRef(null);
@@ -41,6 +41,8 @@ export default function KanbanBoard() {
         setColumnTitles(responseData.column_names);
         setTasks(responseData.tasks);
         setTaskTitles(responseData.task_names);
+
+        const userEmail = localStorage.getItem("email");
       } catch (err) {
         console.error(err);
       }

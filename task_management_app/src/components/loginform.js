@@ -12,6 +12,7 @@ const LoginForm = ({ updateUserEmail }) => {
 
   const handleLoginSuccess = (token, email) => {
     localStorage.setItem("token", token);
+    localStorage.setItem("email", formData.email);
     updateUserEmail(formData.email);
     navigate("/homepage");
   }
@@ -37,6 +38,7 @@ const LoginForm = ({ updateUserEmail }) => {
       } else {
         console.log("Login failed.");
         alert("Inavlid email or password. Please try again.");
+        navigate("/login");
       }
     } catch (error) {
       console.error("Error:", error);
