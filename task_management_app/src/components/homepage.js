@@ -3,10 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import './homepage.css'; // Import your CSS file for styling
 
 const HomePage = () => {
-  const [userEmail, setUserEmail] = useState('');
+  const [userEmail, setUserEmail]             = useState('');
   const [isCreatingBoard, setIsCreatingBoard] = useState(false);
-  const [newBoardName, setNewBoardName] = useState('');
-  const [boards, setBoards] = useState([]);
+  const [newBoardName, setNewBoardName]       = useState('');
+  const [boards, setBoards]                   = useState([]);
 
   const navigate = useNavigate();
 

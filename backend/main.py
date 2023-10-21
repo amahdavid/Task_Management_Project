@@ -258,7 +258,6 @@ def create_column(board_id):
             "tasks": []
         }
 
-        # find the board and update it with the new column
         new_column_id = ObjectId()
         result = boards.find_one_and_update(
             {"_id": ObjectId(board_id)},
@@ -296,14 +295,13 @@ def create_task(board_id, column_id):
         }
 
         new_task_id = ObjectId()
-        # Find the board and update it with the new task
         result = boards.find_one_and_update(
             {"_id": ObjectId(board_id), "columns._id": ObjectId(column_id)},
             {"$push": {"columns.$.tasks": {"_id": new_task_id, **task_data}}}
         )
 
         if not result:
-            return jsonify({"error": "Board or column not found"}), 404
+            return jsonify({"error": "Column not found to add task to"}), 404
 
         # Log successful task creation
         logging.info(f"Task created with name: {data['taskTitle']}")
@@ -312,6 +310,7 @@ def create_task(board_id, column_id):
             "message": "Task created successfully",
             "task_id": str(new_task_id),
             "task_name": data["taskTitle"],
+            "column_id": column_id
         }
 
         return jsonify(response_data), 201

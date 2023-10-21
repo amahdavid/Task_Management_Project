@@ -34,7 +34,7 @@ export default function Column({ title, tasks, id, updateTaskTitle, addTaskToCol
 
   const handleAddTask = () => {
     if(newTaskTitle.trim() !== "") {
-      addTaskToColumn (id, newTaskTitle);
+      addTaskToColumn (newTaskTitle);
       setNewTaskTitle("");
     }
   }
