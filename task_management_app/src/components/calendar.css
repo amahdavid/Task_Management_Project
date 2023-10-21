@@ -5,7 +5,12 @@
     background-color: #fff;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 300px;
+    width: 400px;
+    position: absolute;
+    padding: 10px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     margin: 0 auto;
   }
   
@@ -35,7 +40,7 @@
   
   /* Calendar Table Header Styles */
   .container th {
-    background-color: #007BFF;
+    background-color: #529ded;
     color: #fff;
     font-weight: bold;
     padding: 10px;

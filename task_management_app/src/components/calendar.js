@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "./calendar.css";
 
 function Calendar() {
     const [date, setDate] = useState(new Date());
@@ -19,6 +20,7 @@ function Calendar() {
         "December",
     ];
 
+    const today = new Date();
     const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
     const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
     const daysInMonth = lastDayOfMonth.getDate();
@@ -57,7 +59,7 @@ function Calendar() {
     };
 
     return (
-        <div>
+        <div className="container">
             <div>
                 <button onClick={prevMonth}>Prev</button>
                 <span>{monthsOfYear[date.getMonth()]} {date.getFullYear()}</span>
@@ -75,7 +77,14 @@ function Calendar() {
                     {weeks.map((week, i) => (
                         <tr key={i}>
                             {week.map((day, j) => (
-                                <td key={j}>{day}</td>
+                                <td 
+                                key={j} 
+                                className={day ===null ? "empty-day" : "calendar-day"}
+                                style={{
+                                    backgroundColor: day === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear() ? "#7AB6FF" : "transparent",
+                                    color: day === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear() ? "#fff" : "#333",
+                                  }}
+                                >{day}</td>
                             ))}
                         </tr>
                     ))}
