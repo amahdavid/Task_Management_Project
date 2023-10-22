@@ -28,6 +28,17 @@
     font-family: 'CustomFont';
 }
 
+.settings-form {
+    position: relative;
+    max-width: 430px;
+    width: 100%;
+    padding: 34px;
+    border-radius: 6px;
+    background-color: whitesmoke;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, alph0a);
+    font-family: 'CustomFont';
+}
+
 
 @font-face {
     font-family: 'CustomFont';
@@ -72,12 +83,29 @@ input[type="text"], input[type="password"] {
     box-sizing: border-box;
 }
 
-button {
+.login_button {
     font-family: 'CustomFont';
     font-size: 18px;
     font-weight: 100;
     color: black;
     width: 100%;
+    height: 50px;
+    margin-top: 20px;
+    padding: 0 15px;
+    background: #C1EEFF;
+    border: none;
+    border-radius: 60px;
+    box-sizing: border-box;
+    cursor: pointer;
+    outline: none;
+}
+
+button {
+    font-family: 'CustomFont';
+    font-size: 18px;
+    font-weight: 100;
+    color: black;
+    width: auto;
     height: 50px;
     margin-top: 20px;
     padding: 0 15px;

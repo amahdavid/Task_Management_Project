@@ -76,7 +76,7 @@ const LoginForm = ({ updateUserEmail }) => {
             value={formData.password}
             onChange={handleChange}
           />
-          <button type="submit">Log In</button>
+          <button className = "login_button" type="submit">Log In</button>
 
           <p>
             Don't have an account?<Link to="/signup">Sign Up</Link>

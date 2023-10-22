@@ -112,7 +112,7 @@ const SignupForm = ({ updateUserEmail }) => {
             value={formData.confirmPassword}
             onChange={handleChange}
           />
-          <button type="submit">Sign Up</button>
+          <button className = "login_button" type="submit">Sign Up</button>
         </form>
 
         <p>

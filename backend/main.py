@@ -1,5 +1,3 @@
-from functools import wraps
-
 from bson import ObjectId
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -15,6 +13,7 @@ logging.basicConfig(level=logging.DEBUG,
                         logging.StreamHandler(),  # Log to the console
                     ]
                     )
+
 
 app = Flask(__name__)
 CORS(app)  # This will enable CORS for all routes
@@ -32,7 +31,7 @@ app.config['JWT_SECRET_KEY'] = 'your_secret_key'  # Change this to your secret k
 jwt = JWTManager(app)
 
 
-@app.route('/protected_route', methods=['GET'])
+@app.route('/protected_route', methods=['GET'], endpoint='protected_route_endpoint')
 @jwt_required
 def protected_route(user_email):
     current_user = get_jwt_identity()
@@ -98,6 +97,78 @@ def login():
         # Handle any exceptions that occur during login
         logging.error(f"Error during login: {str(e)}")
         return jsonify({"error": "An error occurred during login"}), 500
+
+
+#Route for changing email
+@app.route('/settings/change_email', methods=['PUT'], endpoint='change_email_endpoint')
+@jwt_required
+def change_email():
+    try:
+        data = request.json  # Get JSON data from the request body
+
+        # Log the incoming data
+        logging.info(f"Received change email request with data: {data}")
+
+        # Validate the data (you can add more validation here)
+        if 'email' not in data:
+            return jsonify({"error": "Email is required"}), 400
+
+        # Check if the email is already registered (Replace this with a database query)
+        if users.find_one({"email": data["email"]}):
+            return jsonify({"error": "Email already exists"}), 400
+
+        # Change email
+        current_user = get_jwt_identity()
+        result = users.find_one_and_update(
+            {"email": current_user},
+            {"$set": {"email": data["email"]}},
+            return_document=ReturnDocument.AFTER
+        )
+
+        if not result:
+            return jsonify({"error": "User not found"}), 404
+
+        # Log successful email change
+        logging.info(f"Email changed to: {data['email']}")
+        return jsonify({"message": "Email changed successfully", "email": data["email"]}), 200
+    except Exception as e:
+        # Handle any exceptions that occur during email change
+        logging.error(f"Error during email change: {str(e)}")
+        return jsonify({"error": "An error occurred during email change"}), 500
+
+
+#Route for changing password
+@app.route('/settings/change_password', methods=['PUT'], endpoint='change_password_endpoint')
+@jwt_required
+def change_password():
+    try:
+        data = request.json  # Get JSON data from the request body
+
+        # Log the incoming data
+        logging.info(f"Received change password request with data: {data}")
+
+        # Validate the data (you can add more validation here)
+        if 'password' not in data:
+            return jsonify({"error": "Password is required"}), 400
+
+        # Change password
+        current_user = get_jwt_identity()
+        result = users.find_one_and_update(
+            {"email": current_user},
+            {"$set": {"password": data["password"]}},
+            return_document=ReturnDocument.AFTER
+        )
+
+        if not result:
+            return jsonify({"error": "User not found"}), 404
+
+        # Log successful password change
+        logging.info(f"Password changed to: {data['password']}")
+        return jsonify({"message": "Password changed successfully", "password": data["password"]}), 200
+    except Exception as e:
+        # Handle any exceptions that occur during password change
+        logging.error(f"Error during password change: {str(e)}")
+        return jsonify({"error": "An error occurred during password change"}), 500
 
 
 # Route for creating a new board
